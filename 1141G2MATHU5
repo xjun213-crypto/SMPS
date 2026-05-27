@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>二上數學測驗 - 第五單元：容量</title>
+    <style>
+        /* 全域邊距修正，防止元件被撐開 */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f0f4f8;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px; /* 手機版的安全留白 */
+        }
+
+        /* 核心主外框：隨螢幕自適應寬度 */
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            width: 100%;
+            max-width: 540px; /* 限制桌機版最大寬度，避免過寬難閱讀 */
+            max-height: 96vh; /* 防止高度超出螢幕 */
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* 若內容真的超長，允許內部分頁滾動 */
+        }
+
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .progress {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            text-align: right;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .question {
+            font-size: 1.15em;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            color: #2c3e50;
+            word-break: break-all; /* 防止長文字衝出邊界 */
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1em;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            outline: none;
+            width: 100%;
+            word-break: break-all;
+        }
+
+        /* 電腦版滑鼠懸停效果 */
+        @media (hover: hover) {
+            .option-btn:hover:not([disabled]) {
+                background-color: #f1f5f9;
+                border-color: #94a3b8;
+            }
+        }
+
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .feedback-box {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+
+        .feedback-box.correct {
+            background-color: #ecfdf5;
+            border-left: 5px solid #10b981;
+            color: #065f46;
+        }
+
+        .feedback-box.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .next-btn {
+            width: 100%;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            text-align: center;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .next-btn:hover {
+            background-color: #2563eb;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .score {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #3b82f6;
+            margin: 16px 0;
+        }
+
+        .restart-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .restart-btn:hover {
+            background-color: #059669;
+        }
+
+        /* 針對極小螢幕（如舊款手機或小面板）進行微調 */
+        @media screen and (max-width: 380px) {
+            body { padding: 6px; }
+            .quiz-container { padding: 16px; }
+            h2 { font-size: 1.2em; margin-bottom: 12px; }
+            .question { font-size: 1.05em; margin-bottom: 12px; }
+            .option-btn { padding: 10px 14px; font-size: 0.95em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <h2>第五單元：容量 測驗</h2>
+            <div class="progress" id="progress-text">第 1 / 20 題</div>
+            <div class="question" id="question-text">題目載入中...</div>
+            <div class="options-container" id="options-box"></div>
+            <div class="feedback-box" id="feedback-text"></div>
+            <button class="next-btn" id="next-button" onclick="nextQuestion()">下一題</button>
+        </div>
+
+        <div id="result-screen" class="result-screen" style="width: 100%;">
+            <h2>測驗結束！</h2>
+            <p style="margin: 8px 0;">你的總分數是：</p>
+            <div class="score" id="final-score">0 分</div>
+            <p id="evaluation-text" style="margin-bottom: 20px; font-weight: bold; color: #555;"></p>
+            <button class="restart-btn" onclick="restartQuiz()">再測驗一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 20題容量單元題目資料庫
+        const questions = [
+            {
+                "question": "請問下面哪一個物品「沒有辦法」用來裝水？",
+                "options": ["石頭", "塑膠杯", "飯碗", "寶特瓶"],
+                "answer": 0,
+                "rationale": "杯子、碗和寶特瓶中間有凹進去的空間可以盛裝液體，叫做容器；石頭沒辦法裝水。"
+            },
+            {
+                "question": "數學課學到的「容量」，代表的是什麼意思？",
+                "options": ["容器穿衣服的顏色", "容器拿起來有多重", "容器裝滿時，裡面的水量", "容器站起來有多高"],
+                "answer": 2,
+                "rationale": "「容量」是指一個容器裝滿時的水量。"
+            },
+            {
+                "question": "把鍋子和茶杯都裝滿水，哪一個容器裝的水會比較多？",
+                "options": ["鍋子", "茶杯", "一樣多", "沒辦法比"],
+                "answer": 0,
+                "rationale": "鍋子的空間比茶杯大，裝滿時鍋子盛裝的水量比較多。"
+            },
+            {
+                "question": "兩個一模一樣的杯子，小明裝了「半杯」水，小華裝了「滿杯」水，誰的水比較多？",
+                "options": ["小明", "小華", "一樣多", "不一定"],
+                "answer": 1,
+                "rationale": "杯子一樣大時，滿杯的水量一定比半杯的水量還要多。"
+            },
+            {
+                "question": "媽媽把一瓶裝滿的保溫瓶整瓶倒進大盆子裡，水都沒有漏出來也沒有滿。請問保溫瓶和大盆子哪一個容量比較大？",
+                "options": ["保溫瓶", "大盆子", "一樣大", "沒辦法確定"],
+                "answer": 1,
+                "rationale": "保溫瓶的水倒進去後「沒有滿」，代表大盆子還可以裝更多水，所以大盆子的容量比較大。"
+            },
+            {
+                "question": "要比較兩個長得不一樣的茶壺哪一個容量大，可以用什麼方法？",
+                "options": ["用眼睛猜最準", "把兩個茶壺互相倒水看看", "用尺量高度", "看哪一個顏色漂亮"],
+                "answer": 1,
+                "rationale": "互相倒水（看能不能裝下或有沒有剩）是進行「直接比較」或「間接比較」的正確數學方法。"
+            },
+            {
+                "question": "甲水壺可以倒滿 5 杯水，乙水壺可以倒滿 3 杯水（杯子都一樣大）。哪一個水壺容量大？",
+                "options": ["甲水壺", "乙水壺", "一樣大", "不能比較"],
+                "answer": 0,
+                "rationale": "甲水壺可以倒滿 5 杯，5 杯比 3 杯多，所以甲水壺的容量比較大。"
+            },
+            {
+                "question": "承上題，甲水壺的容量比乙水壺多出幾杯水呢？",
+                "options": ["2 杯", "3 杯", "5 杯", "8 杯"],
+                "answer": 0,
+                "rationale": "用減法計算：5 － 3 ＝ 2，所以甲水壺比乙水壺多出了 2 杯水的容量。"
+            },
+            {
+                "question": "紅色鍋子裝滿水可以倒滿 8 碗湯，藍色鍋子裝滿水也可以倒滿 8 碗湯（碗都一樣大）。這兩個鍋子的容量怎麼樣？",
+                "options": ["紅色鍋子大", "藍色鍋子大", "一樣大", "不一定"],
+                "answer": 2,
+                "rationale": "兩個鍋子都能倒滿 8 個相同大小的碗，代表它們裝的水一樣多，也就是容量一樣大。"
+            },
+            {
+                "question": "胖胖瓶可以倒滿 6 個小杯子，高高瓶可以倒滿 6 個大杯子。哪一個瓶子的容量比較大？",
+                "options": ["胖胖瓶", "高高瓶", "一樣大", "沒辦法比"],
+                "answer": 1,
+                "rationale": "雖然都是 6 杯，但是大杯子裝的水比小杯子多，所以高高瓶裝的水比較多，容量較大。"
+            },
+            {
+                "question": "小美把一整杯滿滿的果汁倒進大盤子裡。雖然形狀變了，但果汁的水量有變多或變少嗎？",
+                "options": ["變多了", "變少了", "沒有變，還是一樣多", "不知道"],
+                "answer": 2,
+                "rationale": "只是把水換到別的容器，沒有加水也沒有倒掉，水的「分量」是不會改變的。"
+            },
+            {
+                "question": "小明說：「我的熊熊瓶可以裝 4 杯紙杯的水。」小華說：「我的兔子瓶可以裝 4 杯塑膠杯的水。」為什麼他們沒辦法直接比誰的瓶子容量大？",
+                "options": ["開口大小不同", "紙杯和塑膠杯的大小不一定一樣", "因為熊熊比較可愛", "因為他們裝的不是水"],
+                "answer": 1,
+                "rationale": "用個別單位比較容量時，使用的杯子（單位物件）必須完全一樣大，比較結果才公平、準確。"
+            },
+            {
+                "question": "在數學上，要把水裝到什麼程度，才可以稱作「裝滿」？",
+                "options": ["裝到一半", "水面剛好到達杯口，再多一點點就會流出來", "只要裡面有水算", "快要漏出來但只有三分之二"],
+                "answer": 1,
+                "rationale": "裝滿指的是容器能盛裝水量的「最大限制」，水面要剛好到杯口最高點。"
+            },
+            {
+                "question": "感冒時，小華喝了 2 杯水，妹妹喝了 3 杯水（杯子一樣大）。兩個人總共喝了幾杯水？",
+                "options": ["1 杯", "4 杯", "5 杯", "6 杯"],
+                "answer": 2,
+                "rationale": "求合起來的總數量用加法：2 ＋ 3 ＝ 5 杯。"
+            },
+            {
+                "question": "果汁機裡原本裝有 8 杯分量的果汁，媽媽倒出 3 杯給小朋友。果汁機裡還剩下幾杯果汁？",
+                "options": ["3 杯", "5 杯", "8 杯", "11 杯"],
+                "answer": 1,
+                "rationale": "倒出去、變少要用減法：8 － 3 ＝ 5 杯。"
+            },
+            {
+                "question": "點心時間，小華喝了 1 碗湯，小同喝了 3 碗湯（碗一樣大）。小同比小華多喝了幾碗湯？",
+                "options": ["1 碗", "2 碗", "3 碗", "4 碗"],
+                "answer": 1,
+                "rationale": "比較兩者相差多少用減法：3 － 1 ＝ 2 碗。"
+            },
+            {
+                "question": "綠色水桶可以裝滿 10 杯水，黃色水桶只能裝滿 6 杯水。黃色水桶還要再加幾杯水，才會跟綠色水桶裝的一樣多？",
+                "options": ["4 杯", "5 杯", "6 杯", "16 杯"],
+                "answer": 0,
+                "rationale": "想知道還差多少，用減法計算：10 － 6 ＝ 4 杯。"
+            },
+            {
+                "question": "兩杯原本一樣滿的水，小明喝了一些，水面變低了；小華也喝了一些，水面變得比小明的「還要更低」。誰喝的水比較多？",
+                "options": ["小明", "小華", "一樣多", "沒辦法知道"],
+                "answer": 1,
+                "rationale": "剩下的水越低、越少，代表被喝掉的水「越多」，所以水面最低的小華喝得最多。"
+            },
+            {
+                "question": "有一個大臉盆，小強倒進去 5 盆水，爸爸又倒進去 4 盆水，臉盆剛好裝滿。這個臉盆的容量是多少盆水？",
+                "options": ["1 盆水", "4 盆水", "5 盆水", "9 盆水"],
+                "answer": 3,
+                "rationale": "把裝滿前倒進去的水量全部加起來：5 ＋ 4 ＝ 9 盆水。"
+            },
+            {
+                "question": "小魚缸的容量是 12 個馬克杯的水量。姐姐已經倒進去了 7 杯水，還要再倒幾杯水才能把魚缸剛好裝滿？",
+                "options": ["4 杯", "5 杯", "6 杯", "19 杯"],
+                "answer": 1,
+                "rationale": "用總容量減去已經裝的量，就是剩下的需要量：12 － 7 ＝ 5 杯。"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `第 ${currentQuestionIndex + 1} / ${questions.length} 題`;
+            document.getElementById("question-text").innerText = currentQuestion.question;
+            
+            const optionsBox = document.getElementById("options-box");
+            optionsBox.innerHTML = "";
+            
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.className = "option-btn";
+                button.innerText = option;
+                button.onclick = () => selectOption(index);
+                optionsBox.appendChild(button);
+            });
+            
+            document.getElementById("feedback-text").style.display = "none";
+            document.getElementById("next-button").style.display = "none";
+        }
+
+        function selectOption(selectedIndex) {
+            if (answered) return;
+            answered = true;
+            
+            const currentQuestion = questions[currentQuestionIndex];
+            const buttons = document.getElementsByClassName("option-btn");
+            const feedbackBox = document.getElementById("feedback-text");
+            
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+            
+            if (selectedIndex === currentQuestion.answer) {
+                buttons[selectedIndex].classList.add("correct");
+                feedbackBox.className = "feedback-box correct";
+                feedbackBox.innerHTML = `<strong>⭕ 答對了！</strong><br>${currentQuestion.rationale}`;
+                score += 5;
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[currentQuestion.answer].classList.add("correct");
+                feedbackBox.className = "feedback-box wrong";
+                feedbackBox.innerHTML = `<strong>❌ 答錯囉！</strong><br>${currentQuestion.rationale}`;
+            }
+            
+            feedbackBox.style.display = "block";
+            document.getElementById("next-button").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "block";
+            document.getElementById("final-score").innerText = `${score} 分`;
+            
+            const evaluationText = document.getElementById("evaluation-text");
+            if (score === 100) {
+                evaluationText.innerText = "太厲害了！你是容量小達人，全部答對！💯";
+            } else if (score >= 80) {
+                evaluationText.innerText = "做得好！對容量的概念非常清楚喔！🌟";
+            } else if (score >= 60) {
+                evaluationText.innerText = "及格囉！有部分的題目要再仔細想一想。👍";
+            } else {
+                evaluationText.innerText = "再加把勁！多練習幾次，你一定能更棒的！💪";
+            }
+        }
+
+        function restartQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            document.getElementById("result-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
