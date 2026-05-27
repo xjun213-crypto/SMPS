@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>二下數學測驗 - 第三單元：加加減減</title>
+    <style>
+        /* 全域邊距修正，防止元件被撐開 */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f3e8ff; /* 舒適的淺紫色底色 */
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        /* 核心主外框：隨螢幕自適應寬度 */
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            width: 100%;
+            max-width: 540px;
+            max-height: 96vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        h2 {
+            color: #6b21a8;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #e9d5ff;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .progress {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            text-align: right;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .question {
+            font-size: 1.15em;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            color: #2c3e50;
+            word-break: break-all;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1em;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            outline: none;
+            width: 100%;
+            word-break: break-all;
+        }
+
+        @media (hover: hover) {
+            .option-btn:hover:not([disabled]) {
+                background-color: #f3e8ff;
+                border-color: #7c3aed;
+            }
+        }
+
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .feedback-box {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+
+        .feedback-box.correct {
+            background-color: #ecfdf5;
+            border-left: 5px solid #10b981;
+            color: #065f46;
+        }
+
+        .feedback-box.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .next-btn {
+            width: 100%;
+            background-color: #7c3aed;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            text-align: center;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .next-btn:hover {
+            background-color: #6d28d9;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .score {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #7c3aed;
+            margin: 16px 0;
+        }
+
+        .restart-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .restart-btn:hover {
+            background-color: #059669;
+        }
+
+        @media screen and (max-width: 380px) {
+            body { padding: 6px; }
+            .quiz-container { padding: 16px; }
+            h2 { font-size: 1.2em; margin-bottom: 12px; }
+            .question { font-size: 1.05em; margin-bottom: 12px; }
+            .option-btn { padding: 10px 14px; font-size: 0.95em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <h2>第三單元：加加減減 測驗</h2>
+            <div class="progress" id="progress-text">第 1 / 20 題</div>
+            <div class="question" id="question-text">題目載入中...</div>
+            <div class="options-container" id="options-box"></div>
+            <div class="feedback-box" id="feedback-text"></div>
+            <button class="next-btn" id="next-button" onclick="nextQuestion()">下一題</button>
+        </div>
+
+        <div id="result-screen" class="result-screen" style="width: 100%;">
+            <h2>測驗結束！</h2>
+            <p style="margin: 8px 0;">你的總分數是：</p>
+            <div class="score" id="final-score">0 分</div>
+            <p id="evaluation-text" style="margin-bottom: 20px; font-weight: bold; color: #555;"></p>
+            <button class="restart-btn" onclick="restartQuiz()">再測驗一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 20題加加減減單元題目資料庫
+        const questions = [
+            {
+                "question": "用直式計算加減法時，最重要的事情是要把什麼對齊好才能計算？",
+                "options": ["最左邊的字對齊", "相同位數（個位對個位、十位對十位、百位對百位）對齊", "隨便對齊，只要有排成一行就好", "數字最大的要對齊最右邊"],
+                "answer": 1,
+                "rationale": "不論是加法或減法，在寫直式時，個位、十位、百位必須要「對齊好」，才不會把不同位值的值算錯喔！"
+            },
+            {
+                "question": "算算看：123 ＋ 245 是多少？",
+                "options": ["368", "378", "268", "365"],
+                "answer": 0,
+                "rationale": "這題是不進位的加法。個位：3+5=8；十位：2+4=6；百位：1+2=3。合起來就是 368。"
+            },
+            {
+                "question": "算算看：345 ＋ 128 是多少？（提示：注意個位有沒有進位喔！）",
+                "options": ["463", "473", "465", "475"],
+                "answer": 1,
+                "rationale": "個位：5+8=13，寫 3 進 1 到十位。十位：4+2+1(進位)=7。百位：3+1=4。所以答案是 473。"
+            },
+            {
+                "question": "算算看：271 ＋ 182 是多少？（提示：注意十位有沒有進位喔！）",
+                "options": ["353", "453", "363", "463"],
+                "answer": 1,
+                "rationale": "個位：1+2=3。十位：7+8=15，寫 5 進 1 到百位。百位：2+1+1(進位)=4。所以答案是 453。"
+            },
+            {
+                "question": "挑戰連續進位加法：456 ＋ 265 是多少？",
+                "options": ["611", "711", "721", "621"],
+                "answer": 2,
+                "rationale": "個位：6+5=11，寫 1 進 1。十位：5+6+1=12，寫 2 進 1。百位：4+2+1=7。所以答案是 721。"
+            },
+            {
+                "question": "算算看：307 ＋ 145 是多少？",
+                "options": ["442", "452", "412", "552"],
+                "answer": 1,
+                "rationale": "個位：7+5=12，寫 2 進 1。十位：0+4+1(進位)=5。百位：3+1=4。所以答案是 452。"
+            },
+            {
+                "question": "小明今天跟著媽媽做善事。他們早上買了 689 元的白米，下午買了 215 元的燕麥，他們今天一共花了幾元？",
+                "options": ["894 元", "904 元", "804 元", "914 元"],
+                "answer": 1,
+                "rationale": "求一共花多少錢用加法：689 + 215。個位：9+5=14 寫4進1；十位：8+1+1=10 寫0進1；百位：6+2+1=9。答案是 904 元。"
+            },
+            {
+                "question": "算算看：589 － 243 是多少？",
+                "options": ["346", "336", "246", "343"],
+                "answer": 0,
+                "rationale": "這題是不退位的減法。個位：9-3=6；十位：8-4=4；百位：5-2=3。所以答案是 346。"
+            },
+            {
+                "question": "算算看：462 － 135 是多少？（提示：個位不夠減，要跟十位借喔！）",
+                "options": ["337", "327", "333", "317"],
+                "answer": 1,
+                "rationale": "個位 2 不夠減 5，跟十位借 1 當作 10。10-5=5，5+2=7（個位寫7）。十位被借走1剩下 5，5-3=2。百位：4-1=3。答案是 327。"
+            },
+            {
+                "question": "算算看：627 － 281 是多少？（提示：十位不夠減，要跟百位借喔！）",
+                "options": ["446", "346", "366", "436"],
+                "answer": 1,
+                "rationale": "個位：7-1=6。十位 2 不夠減 8，跟百位借 1 當 10。10-8=2，2+2=4（十位寫4）。百位被借走1剩下 5，5-2=3。答案是 346。"
+            },
+            {
+                "question": "挑戰連續退位減法：534 － 268 是多少？",
+                "options": ["276", "366", "266", "256"],
+                "answer": 2,
+                "rationale": "個位 4 減 8 不夠，跟十位借1。10-8=2，2+4=6。十位剩下 2 減 6 不夠，跟百位借1。10-6=4，4+2=6。百位剩下 4，4-2=2。合起來是 266。"
+            },
+            {
+                "question": "如果十位是 0，個位又不夠減時，應該要怎麼退位？例如 405 － 123 中，個位可以減，但十位 0 不夠減 2，應該怎麼辦？",
+                "options": ["直接把 2 減 0 寫 2", "不用算十位", "十位不夠減，要直接跟百位借 1 個百當成 10 個十", "把 405 改成 415 就可以減了"],
+                "answer": 2,
+                "rationale": "當十位是 0 不夠減時，要向百位借 1 個百，在十位上方記作 10 個十，然後再繼續進行十位的減法。405 - 123 = 282。"
+            },
+            {
+                "question": "最容易錯的大挑戰！請問：600 － 245 是多少？",
+                "options": ["455", "365", "355", "465"],
+                "answer": 2,
+                "rationale": "600 的個位 0 不夠，十位也是 0。必須先從百位借 1 給十位（十位變成10），十位再借 1 給個位（個位變成10，十位剩下9）。個位：10-5=5；十位：9-4=5；百位剩下5，5-2=3。答案是 355。"
+            },
+            {
+                "question": "小明收集了 245 張寶可夢卡，小華收集了 188 張。小明和小華合起來一共有幾張寶可夢卡？",
+                "options": ["423 張", "433 張", "333 張", "443 張"],
+                "answer": 1,
+                "rationale": "求合起來一共有多少用加法：245 ＋ 188 ＝ 433 張。"
+            },
+            {
+                "question": "一本文具故事書要 420 元，一本精裝筆記本要 155 元。文具故事書比精裝筆記本貴了幾元？",
+                "options": ["275 元", "265 元", "365 元", "255 元"],
+                "answer": 1,
+                "rationale": "求「貴幾元」或「相差幾元」用減法：420 － 155 ＝ 265 元。"
+            },
+            {
+                "question": "姐姐存錢筒裡有 350 元，她存的錢比妹妹「多了 125 元」。請問妹妹存了幾元？",
+                "options": ["475 元", "225 元", "235 元", "125 元"],
+                "answer": 1,
+                "rationale": "姐姐比妹妹多，代表妹妹的錢比較少。所以要用姐姐的錢扣掉多的部分：350 － 125 ＝ 225 元。"
+            },
+            {
+                "question": "哥哥手上有 512 元，弟弟手上的錢「比哥哥少了 189 元」。請問弟弟手上有幾元？",
+                "options": ["323 元", "423 元", "333 元", "701 元"],
+                "answer": 0,
+                "rationale": "弟弟比哥哥少，要用減法求弟弟的錢：512 － 189 ＝ 323 元。"
+            },
+            {
+                "question": "公車上原本有 35 個人。到了某一站之後，下去 18 個人，接著又上來 25 個人。請問現在公車上一共有幾個人？",
+                "options": ["32 人", "42 人", "17 人", "45 人"],
+                "answer": 1,
+                "rationale": "兩步驟問題：下去的人用減法，上來的人用加法。35 － 18 ＝ 17 人，17 ＋ 25 ＝ 42 人。現在有 42 人。"
+            },
+            {
+                "question": "小華想買一個 298 元的機器人和一盒 105 元的樂高。他口袋裡帶了 400 元，請問他的錢夠不夠買這兩樣玩具？",
+                "options": ["剛好不剩任何錢", "夠，還會剩很多錢", "不夠，因為加起來超過 400 元了", "沒辦法估算"],
+                "answer": 2,
+                "rationale": "我們可以用估算：298 元接近 300 元，105 元接近 100 元，300 ＋ 100 大約就要 400 元了。實際上 298 ＋ 105 ＝ 403 元，比 400 元還要多，所以帶 400 元是不夠的。"
+            },
+            {
+                "question": "算算看括號裡的數字是多少：250 ＋（ ）＝ 600？",
+                "options": ["450", "350", "400", "250"],
+                "answer": 1,
+                "rationale": "已知和與其中一個加數，求另一個加數用減法：600 － 250 ＝ 350。所以括號裡要填入 350。"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `第 ${currentQuestionIndex + 1} / ${questions.length} 題`;
+            document.getElementById("question-text").innerText = currentQuestion.question;
+            
+            const optionsBox = document.getElementById("options-box");
+            optionsBox.innerHTML = "";
+            
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.className = "option-btn";
+                button.innerText = option;
+                button.onclick = () => selectOption(index);
+                optionsBox.appendChild(button);
+            });
+            
+            document.getElementById("feedback-text").style.display = "none";
+            document.getElementById("next-button").style.display = "none";
+        }
+
+        function selectOption(selectedIndex) {
+            if (answered) return;
+            answered = true;
+            
+            const currentQuestion = Math.min(currentQuestionIndex, questions.length - 1);
+            const qData = questions[currentQuestion];
+            const buttons = document.getElementsByClassName("option-btn");
+            const feedbackBox = document.getElementById("feedback-text");
+            
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+            
+            if (selectedIndex === qData.answer) {
+                buttons[selectedIndex].classList.add("correct");
+                feedbackBox.className = "feedback-box correct";
+                feedbackBox.innerHTML = `<strong>⭕ 答對了！</strong><br>${qData.rationale}`;
+                score += 5;
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedbackBox.className = "feedback-box wrong";
+                feedbackBox.innerHTML = `<strong>❌ 答錯囉！</strong><br>${qData.rationale}`;
+            }
+            
+            feedbackBox.style.display = "block";
+            document.getElementById("next-button").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "block";
+            document.getElementById("final-score").innerText = `${score} 分`;
+            
+            const evaluationText = document.getElementById("evaluation-text");
+            if (score === 100) {
+                evaluationText.innerText = "太完美了！連續進退位完全難不倒你，你是計算小神童！💯";
+            } else if (score >= 80) {
+                evaluationText.innerText = "好棒！三位數的加減法直式和應用題，你掌握得非常好哦！🌟";
+            } else if (score >= 60) {
+                evaluationText.innerText = "及格了！遇到中間是 0 或者是比多比少的應用題，要更仔細審題喔。👍";
+            } else {
+                evaluationText.innerText = "再多練習幾次！好好對齊個位十位，借位時做好記號，你一定能進步！💪";
+            }
+        }
+
+        function restartQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            document.getElementById("result-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
