@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>二下數學測驗 - 第一單元：1000以內的數</title>
+    <style>
+        /* 全域邊距修正，防止元件被撐開 */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #eef2f7; /* 科技感的淡藍灰色底 */
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        /* 核心主外框：隨螢幕自適應寬度 */
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            width: 100%;
+            max-width: 540px;
+            max-height: 96vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        h2 {
+            color: #1e3a8a;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #bfdbfe;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .progress {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            text-align: right;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .question {
+            font-size: 1.15em;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            color: #2c3e50;
+            word-break: break-all;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1em;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            outline: none;
+            width: 100%;
+            word-break: break-all;
+        }
+
+        @media (hover: hover) {
+            .option-btn:hover:not([disabled]) {
+                background-color: #f0f6ff;
+                border-color: #3b82f6;
+            }
+        }
+
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .feedback-box {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+
+        .feedback-box.correct {
+            background-color: #ecfdf5;
+            border-left: 5px solid #10b981;
+            color: #065f46;
+        }
+
+        .feedback-box.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .next-btn {
+            width: 100%;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            text-align: center;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .next-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .score {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #2563eb;
+            margin: 16px 0;
+        }
+
+        .restart-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .restart-btn:hover {
+            background-color: #059669;
+        }
+
+        @media screen and (max-width: 380px) {
+            body { padding: 6px; }
+            .quiz-container { padding: 16px; }
+            h2 { font-size: 1.2em; margin-bottom: 12px; }
+            .question { font-size: 1.05em; margin-bottom: 12px; }
+            .option-btn { padding: 10px 14px; font-size: 0.95em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <h2>第一單元：1000以內的數 測驗</h2>
+            <div class="progress" id="progress-text">第 1 / 20 題</div>
+            <div class="question" id="question-text">題目載入中...</div>
+            <div class="options-container" id="options-box"></div>
+            <div class="feedback-box" id="feedback-text"></div>
+            <button class="next-btn" id="next-button" onclick="nextQuestion()">下一題</button>
+        </div>
+
+        <div id="result-screen" class="result-screen" style="width: 100%;">
+            <h2>測驗結束！</h2>
+            <p style="margin: 8px 0;">你的總分數是：</p>
+            <div class="score" id="final-score">0 分</div>
+            <p id="evaluation-text" style="margin-bottom: 20px; font-weight: bold; color: #555;"></p>
+            <button class="restart-btn" onclick="restartQuiz()">再測驗一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 20題1000以內的數單元題目資料庫
+        const questions = [
+            {
+                "question": "數字「528」中，數字 5 是在什麼位？代表多少？",
+                "options": ["個位，代表 5", "十位，代表 50", "百位，代表 500", "千位，代表 5000"],
+                "answer": 2,
+                "rationale": "三位數從右邊數過來依序是個位、十位、百位。5 在最左邊的百位，所以代表 5 個百，也就是 500。"
+            },
+            {
+                "question": "請問「六百零八」寫成數字應該要怎麼寫？",
+                "options": ["68", "608", "680", "6008"],
+                "answer": 1,
+                "rationale": "六百代表百位寫 6，「零」代表十位沒有東西要寫 0，八代表個位寫 8，合起來就是 608。"
+            },
+            {
+                "question": "數字「730」讀作什麼？",
+                "options": ["七三零", "七十三", "七百三十", "七百零三"],
+                "answer": 2,
+                "rationale": "7 在百位讀作七百，3 在十位讀作三十，個位是 0 不需要讀出來，所以是七百三十。"
+            },
+            {
+                "question": "小明有 4 個百、15 個十和 3 個一，合起來是多少？",
+                "options": ["4153", "453", "553", "583"],
+                "answer": 2,
+                "rationale": "15 個十就是 150。4 個百（400）加上 150 是 550，再加上 3 個一（3）就是 553。或者把 15 個十裡面的 10 個十換成 1 個百，變成 5 個百、5 個十和 3 個一。"
+            },
+            {
+                "question": "依照數的順序填填看：397 — 398 — 399 —（ ），括號裡應該填什麼？",
+                "options": ["300", "310", "400", "401"],
+                "answer": 2,
+                "rationale": "這是 1 個 1 個往前數的規律，399 再加 1 就要進位變成 400 囉。"
+            },
+            {
+                "question": "小華練習十個十個一數：650 — 660 —（ ）— 680，括號裡是哪一個數？",
+                "options": ["661", "670", "690", "700"],
+                "answer": 1,
+                "rationale": "十個十個一數，代表十位的數字會每次加 1。660 再加 10 就是 670。"
+            },
+            {
+                "question": "小同練習一百一百一數：423 — 523 — 623 —（ ），括號裡應該是？",
+                "options": ["633", "624", "723", "823"],
+                "answer": 2,
+                "rationale": "一百一百一數，百位的數字每次會加 1，十位和個位不變。623 再加 100 就是 723。"
+            },
+            {
+                "question": "錢包裡有 3 張 100 元紙鈔、7 個 10 元硬幣和 4 個 1 元硬幣，總共有多少元？",
+                "options": ["347 元", "374 元", "734 元", "473 元"],
+                "answer": 1,
+                "rationale": "3 個百是 300，7 個十是 70，4 個一是 4，合起來就是 374 元。"
+            },
+            {
+                "question": "小美想買一套 405 元的玩具故事書，她要怎麼付錢才剛好？",
+                "options": ["4 張 100 元和 5 個 10 元", "4 張 100 元和 5 個 1 元", "40 張 100 元和 5 個 1 元", "4 張 100 元和 50 個 1 元"],
+                "answer": 1,
+                "rationale": "405 元的百位是 4（4張100元），十位是 0（不用10元），個位是 5（5個1元）。"
+            },
+            {
+                "question": "比較數的大小：請問 812 和 799 哪一個數比較大？",
+                "options": ["812 比較大", "799 比較大", "一樣大", "沒辦法比較"],
+                "answer": 0,
+                "rationale": "比較三位數大小要先看「百位」。812 的百位是 8，799 的百位是 7，因為 8 比 7 大，所以 812 一定比較大。"
+            },
+            {
+                "question": "比較數的大小：請問 543 和 561 哪一個數比較大？",
+                "options": ["543 比較大", "561 比較大", "一樣大", "不一定"],
+                "answer": 1,
+                "rationale": "兩個數的百位都是 5，接著就要比「十位」。543 的十位是 4，561 的十位是 6，因為 6 比 4 大，所以 561 比較大。"
+            },
+            {
+                "question": "把 290、209、299 這三個數，按照「從小到大」的順序排列，哪一個是對的？",
+                "options": ["299 < 290 < 209", "209 < 299 < 290", "209 < 290 < 299", "290 < 209 < 299"],
+                "answer": 2,
+                "rationale": "先比十位，0 最小、再來是 9。接著比個位，290 的個位是 0，299 的個位是 9。所以最小的是 209，再來是 290，最大的是 299。"
+            },
+            {
+                "question": "10 個 10 元硬幣，可以換成一張多少元的紙鈔？",
+                "options": ["10 元", "100 元", "500 元", "1000 元"],
+                "answer": 1,
+                "rationale": "10 個十就是 100，所以 10 個 10 元硬幣剛好可以換成一張 100 元紙鈔。"
+            },
+            {
+                "question": "10 張 100 元紙鈔，合起來是多少元？",
+                "options": ["100 元", "500 元", "900 元", "1000 元"],
+                "answer": 3,
+                "rationale": "10 個一百合起來就是一千，寫作 1000。"
+            },
+            {
+                "question": "關於數字「1000」，下面哪一個說法是「錯誤」的？",
+                "options": ["它是一個四位數", "它讀作一千", "它比 999 還要大 1", "它裡面有 10 個十"],
+                "answer": 3,
+                "rationale": "1000 裡面有 100 個十，或者是 10 個百才對。10 個十只有 100 喔。"
+            },
+            {
+                "question": "一個存錢筒裡有 6 個百和 14 個一，請問裡面有多少錢？",
+                "options": ["614 元", "641 元", "740 元", "6014 元"],
+                "answer": 0,
+                "rationale": "6 個百是 600，14 個一是 14，600 ＋ 14 ＝ 614 元。注意十位是 1 喔！"
+            },
+            {
+                "question": "倒著數數看：802 — 801 — 800 —（ ），括號裡應該填入哪一個數？",
+                "options": ["790", "799", "801", "810"],
+                "answer": 1,
+                "rationale": "這是每次減 1 的倒著數。800 再往回數 1 個，百位退位變成 7，所以是 799。"
+            },
+            {
+                "question": "定位板上，百位記了 3，十位記了 0，個位記了 0。這個數是多少？",
+                "options": ["3", "30", "300", "3000"],
+                "answer": 2,
+                "rationale": "百位是 3，十位和個位填上 0 佔位，合起來就是三位數 300。"
+            },
+            {
+                "question": "一個大果園今天採收了橘子，十顆裝一袋，十袋裝一箱。如果果園一共裝滿了 7 箱、3 袋，還剩下 5 顆，總共有幾顆橘子？",
+                "options": ["735 顆", "753 顆", "375 顆", "537 顆"],
+                "answer": 0,
+                "rationale": "一箱是 100 顆（有 7 箱＝700），一袋是 10 顆（有 3 袋＝30），零散的有 5 顆。合起來就是 735 顆。"
+            },
+            {
+                "question": "小明手上有 450 元，小華手上有 405 元，小同手上有 455 元。誰的錢最少？",
+                "options": ["小明", "小華", "小同", "一樣多"],
+                "answer": 1,
+                "rationale": "三個數的百位都是 4。比十位：小明是 5、小華是 0、小同是 5。因為 0 最小，所以 405 元的小華手上的錢最少。"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `第 ${currentQuestionIndex + 1} / ${questions.length} 題`;
+            document.getElementById("question-text").innerText = currentQuestion.question;
+            
+            const optionsBox = document.getElementById("options-box");
+            optionsBox.innerHTML = "";
+            
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.className = "option-btn";
+                button.innerText = option;
+                button.onclick = () => selectOption(index);
+                optionsBox.appendChild(button);
+            });
+            
+            document.getElementById("feedback-text").style.display = "none";
+            document.getElementById("next-button").style.display = "none";
+        }
+
+        function selectOption(selectedIndex) {
+            if (answered) return;
+            answered = true;
+            
+            const currentQuestion = Math.min(currentQuestionIndex, questions.length - 1);
+            const qData = questions[currentQuestion];
+            const buttons = document.getElementsByClassName("option-btn");
+            const feedbackBox = document.getElementById("feedback-text");
+            
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+            
+            if (selectedIndex === qData.answer) {
+                buttons[selectedIndex].classList.add("correct");
+                feedbackBox.className = "feedback-box correct";
+                feedbackBox.innerHTML = `<strong>⭕ 答對了！</strong><br>${qData.rationale}`;
+                score += 5;
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedbackBox.className = "feedback-box wrong";
+                feedbackBox.innerHTML = `<strong>❌ 答錯囉！</strong><br>${qData.rationale}`;
+            }
+            
+            feedbackBox.style.display = "block";
+            document.getElementById("next-button").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "block";
+            document.getElementById("final-score").innerText = `${score} 分`;
+            
+            const evaluationText = document.getElementById("evaluation-text");
+            if (score === 100) {
+                evaluationText.innerText = "超強的！你對 1000 以內的數瞭如指掌，拿到滿分！💯";
+            } else if (score >= 80) {
+                evaluationText.innerText = "非常棒！百位、十位、個位都分得很清楚哦！🌟";
+            } else if (score >= 60) {
+                evaluationText.innerText = "及格了！遇到十位是 0 或者是進退位的題目要再仔細一點。👍";
+            } else {
+                evaluationText.innerText = "再多加油！分清楚「幾個十」和「幾個百」，你一定可以做得更好！💪";
+            }
+        }
+
+        function restartQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            document.getElementById("result-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
