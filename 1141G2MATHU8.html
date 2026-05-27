@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>二上數學測驗 - 第八單元：時間</title>
+    <style>
+        /* 全域邊距修正，防止元件被撐開 */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fdf6ec; /* 溫暖的淺黃色底色 */
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        /* 核心主外框：隨螢幕自適應寬度 */
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            width: 100%;
+            max-width: 540px;
+            max-height: 96vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        h2 {
+            color: #b76e00;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #fcd39d;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .progress {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            text-align: right;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .question {
+            font-size: 1.15em;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            color: #2c3e50;
+            word-break: break-all;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1em;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            outline: none;
+            width: 100%;
+            word-break: break-all;
+        }
+
+        @media (hover: hover) {
+            .option-btn:hover:not([disabled]) {
+                background-color: #f8fafc;
+                border-color: #94a3b8;
+            }
+        }
+
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .feedback-box {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+
+        .feedback-box.correct {
+            background-color: #ecfdf5;
+            border-left: 5px solid #10b981;
+            color: #065f46;
+        }
+
+        .feedback-box.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .next-btn {
+            width: 100%;
+            background-color: #f59e0b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            text-align: center;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .next-btn:hover {
+            background-color: #d97706;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .score {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #f59e0b;
+            margin: 16px 0;
+        }
+
+        .restart-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .restart-btn:hover {
+            background-color: #059669;
+        }
+
+        @media screen and (max-width: 380px) {
+            body { padding: 6px; }
+            .quiz-container { padding: 16px; }
+            h2 { font-size: 1.2em; margin-bottom: 12px; }
+            .question { font-size: 1.05em; margin-bottom: 12px; }
+            .option-btn { padding: 10px 14px; font-size: 0.95em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <h2>第八單元：時間 測驗</h2>
+            <div class="progress" id="progress-text">第 1 / 20 題</div>
+            <div class="question" id="question-text">題目載入中...</div>
+            <div class="options-container" id="options-box"></div>
+            <div class="feedback-box" id="feedback-text"></div>
+            <button class="next-btn" id="next-button" onclick="nextQuestion()">下一題</button>
+        </div>
+
+        <div id="result-screen" class="result-screen" style="width: 100%;">
+            <h2>測驗結束！</h2>
+            <p style="margin: 8px 0;">你的總分數是：</p>
+            <div class="score" id="final-score">0 分</div>
+            <p id="evaluation-text" style="margin-bottom: 20px; font-weight: bold; color: #555;"></p>
+            <button class="restart-btn" onclick="restartQuiz()">再測驗一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 20題時間單元題目資料庫
+        const questions = [
+            {
+                "question": "時鐘上面有兩條主要的針，請問「長針」是用來數什麼的？",
+                "options": ["時（小時）", "分（分鐘）", "秒（秒鐘）", "天（天數）"],
+                "answer": 1,
+                "rationale": "時鐘上的長針（走得比較快的指針）是「分針」，用來指出現在是幾分。"
+            },
+            {
+                "question": "時鐘上的「短針」是用來指出現在是幾時。那短針又叫作什麼針？",
+                "options": ["分針", "秒針", "時針", "指南針"],
+                "answer": 2,
+                "rationale": "用來指出「幾時」的短針，在數學上叫做「時針」。"
+            },
+            {
+                "question": "如果時鐘的短針指著 3，長針剛好指著 12，這代表是幾時？",
+                "options": ["12 時", "3 時", "3 時 12 分", "12 時 3 分"],
+                "answer": 1,
+                "rationale": "當長針（分針）指在 12 的時候代表「整點」，這個時候短針指著幾就是幾時。所以是 3 時。"
+            },
+            {
+                "question": "如果短針指在 4 和 5 的正中間，而長針剛好指著 6，這代表是幾時幾分？",
+                "options": ["4 時 6 分", "5 時 6 分", "4 時 30 分", "5 時 30 分"],
+                "answer": 2,
+                "rationale": "短針超過 4 但還沒到 5，代表是 4 時多；長針指著 6 代表走了 30 分鐘（半小時），所以是 4 時 30 分。"
+            },
+            {
+                "question": "時鐘的鐘面上一共有幾個數字？分成幾個大格子？",
+                "options": ["10 個", "12 個", "24 個", "60 個"],
+                "answer": 1,
+                "rationale": "時鐘表面從 1 編號到 12，總共有 12 個數字，也代表分成了 12 個大格子。"
+            },
+            {
+                "question": "長針（分針）走「1 大格」（例如從數字 1 走到數字 2），代表過去了幾分鐘？",
+                "options": ["1 分鐘", "2 分鐘", "5 分鐘", "12 分鐘"],
+                "answer": 2,
+                "rationale": "鐘面的每一個大格子裡面都包含 5 個小格。分針走 1 大格就是走了 5 小格，代表過去了 5 分鐘。"
+            },
+            {
+                "question": "長針（分針）如果只走「1 小格」，代表過去了幾分鐘？",
+                "options": ["1 分鐘", "5 分鐘", "10 分鐘", "60 分鐘"],
+                "answer": 0,
+                "rationale": "分針走 1 小格就是 1 分鐘；走 1 大格才是 5 分鐘喔。"
+            },
+            {
+                "question": "看鐘面時，如果短針指在 12 和 1 之間，長針指著數字 4。請問現在是幾時幾分？",
+                "options": ["12 時 4 分", "12 時 20 分", "1 時 4 分", "1 時 20 分"],
+                "answer": 1,
+                "rationale": "短針在 12 和 1 之間代表 12 時多。長針指著 4，用五的九九乘法算：四五二十，所以是 20 分。答案是 12 時 20 分。"
+            },
+            {
+                "question": "如果長針（分針）繞了時鐘整整「一圈」，代表過去了幾分鐘？也就是幾小時？",
+                "options": ["12 分鐘，1 小時", "24 分鐘，2 小時", "60 分鐘，1 小時", "60 分鐘，12 小時"],
+                "answer": 2,
+                "rationale": "分針繞一圈走完 60 個小格，就是 60 分鐘。而 60 分鐘剛好等於 1 小時（這時時針會前進一個大格）。"
+            },
+            {
+                "question": "短針（時針）如果繞了時鐘整整「一圈」，代表過去了幾個小時？",
+                "options": ["1 小時", "6 小時", "12 小時", "24 小時"],
+                "answer": 2,
+                "rationale": "時針走完一圈是從數字 1 走到 12，總共是 12 個小時。"
+            },
+            {
+                "question": "我們過完的一整天（從半夜到白天再到半夜），總共有幾個小時？",
+                "options": ["12 小時", "24 小時", "60 小時", "100 小時"],
+                "answer": 1,
+                "rationale": "一整天有 24 個小時。時針在一天之內會剛好轉滿兩整圈（12 ＋ 12 ＝ 24）。"
+            },
+            {
+                "question": "小明早上 7 時起床上學，這個時候我們會說是「上午」還是「下午」？",
+                "options": ["上午 7 時", "下午 7 時", "中午 7 時", "晚上 7 時"],
+                "answer": 0,
+                "rationale": "早上、中午以前的時間，我們在數學上會稱作「上午」。所以上學是上午 7 時。"
+            },
+            {
+                "question": "媽媽在太陽下山後、吃完晚餐的晚上 8 時帶小明去散步。這時候應該怎麼稱呼？",
+                "options": ["上午 8 時", "下午 8 時", "中午 8 時", "凌晨 8 時"],
+                "answer": 1,
+                "rationale": "中午 12 時之後到半夜之前的時間，我們統稱為「下午」或晚上。在時間名稱中記作「下午 8 時」。"
+            },
+            {
+                "question": "現在是上午 10 時，再過「1 小時」後，時鐘會變成幾時？",
+                "options": ["上午 9 時", "上午 11 時", "下午 1 時", "上午 12 時"],
+                "answer": 1,
+                "rationale": "時間往後算用加法：10 ＋ 1 ＝ 11。所以是上午 11 時。"
+            },
+            {
+                "question": "妹妹下午 4 時開始寫作業，寫了 1 個小時剛好寫完。請問妹妹是在下午幾時寫完的？",
+                "options": ["下午 3 時", "下午 4 時", "下午 5 時", "下午 6 時"],
+                "answer": 2,
+                "rationale": "下午 4 時再過 1 小時，就是 4 ＋ 1 ＝ 5，所以寫完的時間是下午 5 時。"
+            },
+            {
+                "question": "時鐘上的短針看起來「快要指到 8，但還差一點點」，長針剛好指在數字 11。請問現在是幾時幾分？",
+                "options": ["8 時 11 分", "8 時 55 分", "7 時 11 分", "7 時 55 分"],
+                "answer": 3,
+                "rationale": "這是最容易看錯的題目！短針還沒真正走到 8，代表還是 7 時多。長針指在 11 代表 55 分（11 × 5 ＝ 55）。所以是 7 時 55 分。"
+            },
+            {
+                "question": "如果時鐘現在是 2 時 15 分，再過 5 分鐘後，會變成 2 時幾分？",
+                "options": ["2 時 10 分", "2 時 20 分", "3 時 15 分", "2 時 50 分"],
+                "answer": 1,
+                "rationale": "小時不變，分鐘多 5 分鐘：15 ＋ 5 ＝ 20 分。所以是 2 時 20 分。"
+            },
+            {
+                "question": "有一場卡通從下午 1 時 10 分開始演，演到下午 1 時 40 分結束。這場卡通總共演了幾分鐘？",
+                "options": ["10 分鐘", "30 分鐘", "40 分鐘", "50 分鐘"],
+                "answer": 1,
+                "rationale": "看分鐘的變化：從 10 分到 40 分，用減法計算經過的時間：40 － 10 ＝ 30 分鐘。"
+            },
+            {
+                "question": "下面哪一件事情，通常需要花費大約「1 小時」這麼長的時間？",
+                "options": ["寫一個字的姓名", "在學校上一堂完整的課加上下課", "眨一下眼睛", "喝一口牛奶"],
+                "answer": 1,
+                "rationale": "寫名字、眨眼、喝一口水都只需要幾秒鐘或幾分鐘。國小的堂課加休息時間接近一小時，最符合這個時間長度。"
+            },
+            {
+                "question": "時鐘上的長針和短針，平時是朝著哪一個方向轉動的？",
+                "options": ["順時針方向（數字 1 走到 2 走到 3）", "逆時針方向（數字 3 走到 2 走到 1）", "兩條針轉的方向相反", "高興往哪裡轉就往哪裡轉"],
+                "answer": 0,
+                "rationale": "時鐘的指針轉動方向是固定的，依照數字 1、2、3...的順序前進，這個方向就叫作「順時針方向」。"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `第 ${currentQuestionIndex + 1} / ${questions.length} 題`;
+            document.getElementById("question-text").innerText = currentQuestion.question;
+            
+            const optionsBox = document.getElementById("options-box");
+            optionsBox.innerHTML = "";
+            
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.className = "option-btn";
+                button.innerText = option;
+                button.onclick = () => selectOption(index);
+                optionsBox.appendChild(button);
+            });
+            
+            document.getElementById("feedback-text").style.display = "none";
+            document.getElementById("next-button").style.display = "none";
+        }
+
+        function selectOption(selectedIndex) {
+            if (answered) return;
+            answered = true;
+            
+            const currentQuestion = questions[currentQuestionIndex];
+            const buttons = document.getElementsByClassName("option-btn");
+            const feedbackBox = document.getElementById("feedback-text");
+            
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+            
+            if (selectedIndex === currentQuestion.answer) {
+                buttons[selectedIndex].classList.add("correct");
+                feedbackBox.className = "feedback-box correct";
+                feedbackBox.innerHTML = `<strong>⭕ 答對了！</strong><br>${currentQuestion.rationale}`;
+                score += 5;
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[currentQuestion.answer].classList.add("correct");
+                feedbackBox.className = "feedback-box wrong";
+                feedbackBox.innerHTML = `<strong>❌ 答錯囉！</strong><br>${currentQuestion.rationale}`;
+            }
+            
+            feedbackBox.style.display = "block";
+            document.getElementById("next-button").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "block";
+            document.getElementById("final-score").innerText = `${score} 分`;
+            
+            const evaluationText = document.getElementById("evaluation-text");
+            if (score === 100) {
+                evaluationText.innerText = "太完美了！你是時間管理大師，全部答對！💯";
+            } else if (score >= 80) {
+                evaluationText.innerText = "好棒！看來你非常會看時鐘跟時間喔！🌟";
+            } else if (score >= 60) {
+                evaluationText.innerText = "及格了！有幾題看錯的小地方要注意看指針的位置。👍";
+            } else {
+                evaluationText.innerText = "再多練習幾次，你一定能分清楚長針和短針的！💪";
+            }
+        }
+
+        function restartQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            document.getElementById("result-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
