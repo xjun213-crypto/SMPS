@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>二下數學測驗 - 第五單元：乘法</title>
+    <style>
+        /* 全域邊距修正，防止元件被撐開 */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff7ed; /* 溫暖的淺橘色底 */
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        /* 核心主外框：隨螢幕自適應寬度 */
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            width: 100%;
+            max-width: 540px;
+            max-height: 96vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        h2 {
+            color: #c2410c;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #fed7aa;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .progress {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            text-align: right;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .question {
+            font-size: 1.15em;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            color: #2c3e50;
+            word-break: break-all;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1em;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            outline: none;
+            width: 100%;
+            word-break: break-all;
+        }
+
+        @media (hover: hover) {
+            .option-btn:hover:not([disabled]) {
+                background-color: #fff7ed;
+                border-color: #ea580c;
+            }
+        }
+
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .feedback-box {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+
+        .feedback-box.correct {
+            background-color: #ecfdf5;
+            border-left: 5px solid #10b981;
+            color: #065f46;
+        }
+
+        .feedback-box.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .next-btn {
+            width: 100%;
+            background-color: #ea580c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            text-align: center;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .next-btn:hover {
+            background-color: #ca8a04;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .score {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #ea580c;
+            margin: 16px 0;
+        }
+
+        .restart-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .restart-btn:hover {
+            background-color: #059669;
+        }
+
+        @media screen and (max-width: 380px) {
+            body { padding: 6px; }
+            .quiz-container { padding: 16px; }
+            h2 { font-size: 1.2em; margin-bottom: 12px; }
+            .question { font-size: 1.05em; margin-bottom: 12px; }
+            .option-btn { padding: 10px 14px; font-size: 0.95em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <h2>第五單元：乘法 測驗</h2>
+            <div class="progress" id="progress-text">第 1 / 20 題</div>
+            <div class="question" id="question-text">題目載入中...</div>
+            <div class="options-container" id="options-box"></div>
+            <div class="feedback-box" id="feedback-text"></div>
+            <button class="next-btn" id="next-button" onclick="nextQuestion()">下一題</button>
+        </div>
+
+        <div id="result-screen" class="result-screen" style="width: 100%;">
+            <h2>測驗結束！</h2>
+            <p style="margin: 8px 0;">你的總分數是：</p>
+            <div class="score" id="final-score">0 分</div>
+            <p id="evaluation-text" style="margin-bottom: 20px; font-weight: bold; color: #555;"></p>
+            <button class="restart-btn" onclick="restartQuiz()">再測驗一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 20題乘法單元題目資料庫
+        const questions = [
+            {
+                "question": "3 + 3 + 3 + 3 + 3 是 5 個 3 連加，可以記成下列哪一個乘法算式？",
+                "options": ["3 × 5", "5 × 3", "3 + 5", "3 × 3"],
+                "answer": 0,
+                "rationale": "3 是被連加的數（被乘數），重複加了 5 次（乘數），因此記作 3 × 5。"
+            },
+            {
+                "question": "在乘法算式 6 × 2 = 12 中，寫在乘號前面的數字「6」在數學上叫作什麼？",
+                "options": ["乘數", "被乘數", "積", "和"],
+                "answer": 1,
+                "rationale": "寫在乘號前面的數字代表「被連加的數」，也就是每一份的數量，稱作被乘數。"
+            },
+            {
+                "question": "在乘法算式 8 × 4 = 32 中，寫在乘號後面的數字「4」在數學上叫作什麼？",
+                "options": ["乘數", "被乘數", "積", "差"],
+                "answer": 0,
+                "rationale": "寫在乘號後面的數字代表物品重複了幾份或幾倍，在數學上稱作乘數。"
+            },
+            {
+                "question": "一盒紅豆餅有 6 個，媽媽買了 4 盒。如果要依照「每盒個數 × 盒數」的意思來列式，哪一個才是正確的乘法算式？",
+                "options": ["4 × 6 = 24", "6 + 4 = 10", "6 × 4 = 24", "6 × 6 = 36"],
+                "answer": 2,
+                "rationale": "每盒 6 個是單位量（被乘數），買了 4 盒是份數（乘數），列成 6 × 4 = 24 完全正確。"
+            },
+            {
+                "question": "每隻青蛙有 4 條腿，池塘裡一共有 8 隻青蛙。請問這些青蛙一共有幾條腿？",
+                "options": ["32 條", "12 條", "28 條", "36 條"],
+                "answer": 0,
+                "rationale": "每隻青蛙有 4 條腿，8 隻就是 8 個 4，透過乘法算式 4 × 8 = 32 即可求出。"
+            },
+            {
+                "question": "不需要辛苦把答案算出來，想一想乘法的規律：算式 5 × 7 比 5 × 6 多了多少？",
+                "options": ["7", "5", "1", "35"],
+                "answer": 1,
+                "rationale": "5 × 7 是 7 個 5 連加，5 × 6 是 6 個 5 連加，兩者相差了 1 個 5，所以多了 5。"
+            },
+            {
+                "question": "算式 9 × 4 在意義上，可以看成是下面哪一種加法情境？",
+                "options": ["9 個 4 相加", "9 加上 4", "4 個 4 相加", "4 個 9 相加"],
+                "answer": 3,
+                "rationale": "9 × 4 代表以 9 為單位，連續出現或累加了 4 次，也就是 4 個 9 相加。"
+            },
+            {
+                "question": "關於「零的乘法」，任何數乘以 0 或者是 0 乘以任何數之後，得到的答案（積）都會是多少？",
+                "options": ["0", "原來的數", "1", "10"],
+                "answer": 0,
+                "rationale": "0 代表什麼都沒有，不論重複多少次，或者任何數字重複了 0 次，結果依然是什麼都沒有（0）。"
+            },
+            {
+                "question": "算式 1 × 9 的計算結果是多少？",
+                "options": ["1", "10", "9", "0"],
+                "answer": 2,
+                "rationale": "1 × 9 代表 9 個 1 連加，所以答案就是 9。任何數乘以 1 都會是原本的數。"
+            },
+            {
+                "question": "一星期固定有 7 天。如果過完了 4 星期，請問一共有幾天？",
+                "options": ["11 天", "28 天", "24 天", "35 天"],
+                "answer": 1,
+                "rationale": "一星期 7 天為單位量，4 星期代表有 4 個 7。利用乘法 7 × 4 = 28 可以快速得到答案。"
+            },
+            {
+                "question": "媽媽買了 3 個漂亮的空袋子，每個袋子裡都裝了 0 顆糖果。請問這三個袋子裡一共有幾顆糖果？",
+                "options": ["0 顆", "3 顆", "30 顆", "1 顆"],
+                "answer": 0,
+                "rationale": "每個袋子有 0 顆，3 個袋子就是 3 個 0 相加（0 × 3 = 0），所以一共有 0 顆糖果。"
+            },
+            {
+                "question": "我們知道 8 × 5 = 40。如果把被乘數和乘數的位置交換，改成算式 5 × 8片，這時候算出來的答案（積）會是多少？",
+                "options": ["45", "35", "80", "40"],
+                "answer": 3,
+                "rationale": "在乘法中，把被乘數和乘數的位置互相交換，雖然情境意義改變，但算出來的「積」不變。"
+            },
+            {
+                "question": "安親班教室裡，一張長桌子可以剛好坐 6 個人。現在教室裡一共有 5 張長桌子，全部坐滿一共可以坐幾個人？",
+                "options": ["11 人", "30 人", "24 人", "36 人"],
+                "answer": 1,
+                "rationale": "一張桌子坐 6 人，5 張桌子就有 5 個 6，列成乘法算式 6 × 5 = 30，所以一共可以坐 30 人。"
+            },
+            {
+                "question": "比較看看：「有 6 包餅乾，每包裝 2 片」和「有 2 包餅乾，每包裝 6 片」，這兩種裝法的餅乾「總片數」有什麼關係？",
+                "options": ["一樣多", "第一種比較多", "第二種比較多", "沒辦法比"],
+                "answer": 0,
+                "rationale": "第一種有 2 × 6 = 12 片，第二種有 6 × 2 = 12 片。因為交換乘數與被乘數後答案不變，所以總片數一樣多。"
+            },
+            {
+                "question": "老師發給 9 個小朋友每人 2 張精美貼紙。如果要選出一個符合「每人張數 × 人數」正確語意的算式，應該選哪一個？",
+                "options": ["9 × 2 = 18", "2 + 9 = 11", "2 × 9 = 18", "9 - 2 = 7"],
+                "answer": 2,
+                "rationale": "每人得到 2 張是基本單位量（被乘數），一共有 9 個人（乘數），所以列成 2 × 9 = 18 是完全正確的。"
+            },
+            {
+                "question": "算式 8 × 7 除了可以算出積之外，它在數學連加的含意上可以表示為什麼？",
+                "options": ["7 個 8 連加", "8 個 7 連加", "8 加上 7", "7 個 7 連加"],
+                "answer": 0,
+                "rationale": "8 × 7 代表以 8 為被乘數，連續加了 7 次，也就是有 7 個 8 連加。"
+            },
+            {
+                "question": "學校外面的麵包店裡一個草莓甜甜圈賣 9 元，小明一共買了 9 個要分給家人吃，他總共要付給老闆幾元？",
+                "options": ["18 元", "81 元", "90 元", "72 元"],
+                "answer": 1,
+                "rationale": "一個甜甜圈 9 元，買 9 個就是 9 個 9。利用九九乘法表口訣「九九八十一」，可以得到總共是 81 元。"
+            },
+            {
+                "question": "小華為自己訂了一個儲蓄計畫，他每天都固定存 5 元。一個星期（7天）過去後，他一共存了多少元？",
+                "options": ["12 元", "40 元", "30 元", "35 元"],
+                "answer": 3,
+                "rationale": "每天存 5 元，存了 7 天代表有 7 個 5。乘法算式為 5 × 7 = 35，所以一共有 35 元。"
+            },
+            {
+                "question": "我們吃飯時用的一雙筷子一共有 2 根。現在媽媽在餐桌上整齊擺了 6 雙筷子，請問一共有幾根筷子？",
+                "options": ["12 根", "8 根", "14 根", "6 根"],
+                "answer": 0,
+                "rationale": "一雙有 2 根，6 雙就是 6 個 2。列成乘法算式 2 × 6 = 12，因此一共有 12 根筷子。"
+            },
+            {
+                "question": "算式 3 × 8 的計算結果（積），和下面哪一個算式的計算結果**不相同**？",
+                "options": ["4 × 6", "6 × 4", "4 × 5", "8 × 3"],
+                "answer": 2,
+                "rationale": "3 × 8 = 24；而選項中的 4 × 5 = 20，其餘三個選項的積也都是 24，所以 4 × 5 的答案不相同。"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `第 ${currentQuestionIndex + 1} / ${questions.length} 題`;
+            document.getElementById("question-text").innerText = currentQuestion.question;
+            
+            const optionsBox = document.getElementById("options-box");
+            optionsBox.innerHTML = "";
+            
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.className = "option-btn";
+                button.innerText = option;
+                button.onclick = () => selectOption(index);
+                optionsBox.appendChild(button);
+            });
+            
+            document.getElementById("feedback-text").style.display = "none";
+            document.getElementById("next-button").style.display = "none";
+        }
+
+        function selectOption(selectedIndex) {
+            if (answered) return;
+            answered = true;
+            
+            const currentQuestion = Math.min(currentQuestionIndex, questions.length - 1);
+            const qData = questions[currentQuestion];
+            const buttons = document.getElementsByClassName("option-btn");
+            const feedbackBox = document.getElementById("feedback-text");
+            
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+            
+            if (selectedIndex === qData.answer) {
+                buttons[selectedIndex].classList.add("correct");
+                feedbackBox.className = "feedback-box correct";
+                feedbackBox.innerHTML = `<strong>⭕ 答對了！</strong><br>${qData.rationale}`;
+                score += 5;
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedbackBox.className = "feedback-box wrong";
+                feedbackBox.innerHTML = `<strong>❌ 答錯囉！</strong><br>${qData.rationale}`;
+            }
+            
+            feedbackBox.style.display = "block";
+            document.getElementById("next-button").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "block";
+            document.getElementById("final-score").innerText = `${score} 分`;
+            
+            const evaluationText = document.getElementById("evaluation-text");
+            if (score === 100) {
+                evaluationText.innerText = "太完美了！九九乘法表和乘法概念你已經完全滾瓜爛熟囉！💯";
+            } else if (score >= 80) {
+                evaluationText.innerText = "太棒了！被乘數與乘數的意義你抓得很準，非常有實力！🌟";
+            } else if (score >= 60) {
+                evaluationText.innerText = "及格了！遇到 0 的乘法或是交換律題目時，再多細心想一下喔。👍";
+            } else {
+                evaluationText.innerText = "加油！多複習連加與乘法的關係，把乘法口訣背熟，下次一定會大幅進步！💪";
+            }
+        }
+
+        function restartQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            document.getElementById("result-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
