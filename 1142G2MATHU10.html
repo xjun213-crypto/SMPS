@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>二下數學測驗 - 第十單元：認識分數</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f0f9ff; /* 清新的天藍色底色 */
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(2, 132, 199, 0.15);
+            padding: 24px;
+            width: 100%;
+            max-width: 540px;
+            max-height: 96vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        h2 {
+            color: #0369a1;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #bae6fd;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .progress {
+            font-size: 0.9em;
+            color: #4b5563;
+            text-align: right;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .question {
+            font-size: 1.15em;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            color: #1f2937;
+            word-break: break-all;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1em;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            outline: none;
+            width: 100%;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        @media (hover: hover) {
+            .option-btn:hover:not([disabled]) {
+                background-color: #f0f9ff;
+                border-color: #0ea5e9;
+            }
+        }
+
+        .option-btn.correct {
+            background-color: #e0f2fe;
+            border-color: #0ea5e9;
+            color: #0369a1;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .feedback-box {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+
+        .feedback-box.correct {
+            background-color: #f0f9ff;
+            border-left: 5px solid #0ea5e9;
+            color: #0369a1;
+        }
+
+        .feedback-box.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .next-btn {
+            width: 100%;
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            text-align: center;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .next-btn:hover {
+            background-color: #0369a1;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .score {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #0284c7;
+            margin: 16px 0;
+        }
+
+        .restart-btn {
+            background-color: #0ea5e9;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .restart-btn:hover {
+            background-color: #0284c7;
+        }
+
+        @media screen and (max-width: 380px) {
+            body { padding: 6px; }
+            .quiz-container { padding: 16px; }
+            h2 { font-size: 1.2em; margin-bottom: 12px; }
+            .question { font-size: 1.05em; margin-bottom: 12px; }
+            .option-btn { padding: 10px 14px; font-size: 0.95em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <h2>第十單元：認識分數 測驗</h2>
+            <div class="progress" id="progress-text">第 1 / 20 題</div>
+            <div class="question" id="question-text">題目載入中...</div>
+            <div class="options-container" id="options-box"></div>
+            <div class="feedback-box" id="feedback-text"></div>
+            <button class="next-btn" id="next-button" onclick="nextQuestion()">下一題</button>
+        </div>
+
+        <div id="result-screen" class="result-screen" style="width: 100%;">
+            <h2>測驗結束！</h2>
+            <p style="margin: 8px 0;">你的總分數是：</p>
+            <div class="score" id="final-score">0 分</div>
+            <p id="evaluation-text" style="margin-bottom: 20px; font-weight: bold; color: #555;"></p>
+            <button class="restart-btn" onclick="restartQuiz()">再測驗一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 20題分數概念題目資料 (避開分母分子名詞，專注邏輯與平分)
+        const questions = [
+            {
+                "question": "在學習分數之前，我們必須知道「平分」的意思。請問下面哪一種情況才是真正的「平分」？",
+                "options": ["把一個蛋糕切成大小一模一樣的幾份", "把一個蛋糕隨便切成好幾塊", "把好吃的蛋糕留給年紀比較小的人", "把蛋糕切成一大塊和一小塊"],
+                "answer": 0,
+                "rationale": "平分的重點在於「公平」，也就是分出來的每一份大小或數量都要完全相同。"
+            },
+            {
+                "question": "媽媽把一個披薩切成兩塊，一塊比較大，一塊比較小。妹妹拿了小的那一塊，這可以說是吃了「二分之一個」披薩嗎？",
+                "options": ["可以，因為全部分成兩塊，她拿了其中一塊", "不可以，因為兩塊大小不一樣，沒有做到平分", "可以，因為只要有切開就可以用分數表示", "不一定，要看披薩是什麼口味"],
+                "answer": 1,
+                "rationale": "分數的基礎是平分，既然切出來的兩塊不相等，就不能說是二分之一。"
+            },
+            {
+                "question": "小明想把一張正方形紙平分。下面哪一種做法「無法」得到一樣大的兩份？",
+                "options": ["沿著對角線摺疊，剪成兩個一樣大的三角形", "從正中間對摺，剪成兩個一樣大的長方形", "隨手撕成一個大三角形和一個小三角形", "用尺量好中心線，切成左右一模一樣的圖形"],
+                "answer": 2,
+                "rationale": "一大一小的圖形破壞了每份都要一樣大的原則，因此這不是平分的做法。"
+            },
+            {
+                "question": "當我們看到一個分數記作「1/4」 (橫線下面寫4，上面寫1)，這個數應該怎麼讀？",
+                "options": ["一分之四", "四加一", "一比四", "四分之一"],
+                "answer": 3,
+                "rationale": "讀分數時要從橫線底下的總份數開始讀起，再讀橫線上面的份數。"
+            },
+            {
+                "question": "如果我們要寫「六分之一」，數字「6」是寫在中間橫線的哪一個位置？",
+                "options": ["橫線的上面", "橫線的下面", "橫線的左邊", "橫線的右邊"],
+                "answer": 1,
+                "rationale": "「六分」代表全部平分成六份，這個表示總份數的數字必須寫在橫線下方。"
+            },
+            {
+                "question": "在分數中，中間橫線「下面」的數字，代表什麼意思？",
+                "options": ["我們拿走了其中的幾份", "剩下沒有拿走的份數", "東西總共被平分成了幾份", "東西原本的重量"],
+                "answer": 2,
+                "rationale": "橫線下方的數字代表整體的總切割份數，是分數的重要基礎。"
+            },
+            {
+                "question": "在分數中，中間橫線「上面」的數字如果是「1」，代表什麼意思？",
+                "options": ["總共平分成了1份", "我們取用了平分後的其中「1份」", "剩下1份沒有拿", "這份東西重1公斤"],
+                "answer": 1,
+                "rationale": "橫線上面的數字代表我們關注或拿取的份數，寫 1 就是指其中的一份。"
+            },
+            {
+                "question": "姐姐把一條緞帶平剪成 8 段，其中的 1 段可以用哪一個分數表示？",
+                "options": ["八分之一條", "一分之八條", "8 條", "1 條"],
+                "answer": 0,
+                "rationale": "緞帶被平分成 8 段，每一段就是這條緞帶總長度的八分之一。"
+            },
+            {
+                "question": "爸爸買了一個西瓜，平分切成 5 片。小華吃了其中的 1 片，可以用下面哪一個分數來表示他吃了幾個西瓜？",
+                "options": ["五分之一個", "一分之五個", "5 個", "1 個"],
+                "answer": 0,
+                "rationale": "下面寫 5 代表總共平分成 5 片，上面寫 1 代表吃了其中的 1 片，讀作五分之一。"
+            },
+            {
+                "question": "像「三分之一」或「四分之一」這種上面數字都是 1 的分數，在數學上代表什麼意思？",
+                "options": ["東西全部加起來的總數", "還沒有開始平分的完整東西", "平分後的其中1份", "分得不公平的碎片"],
+                "answer": 2,
+                "rationale": "當橫線上面寫 1 時，表示只看平分出來的所有份數當中的單獨一份。"
+            },
+            {
+                "question": "有一張長方形的圖畫紙。小明把它平分成 3 份，拿走其中的 1 份，這 1 份是幾張圖畫紙？",
+                "options": ["3 張", "三分之一張", "一分之三張", "1 張"],
+                "answer": 1,
+                "rationale": "紙張被平分成 3 份，拿走其中的 1 份就是三分之一張圖畫紙。"
+            },
+            {
+                "question": "比較大小：請想像一下，「二分之一個」蛋糕和「三分之一個」蛋糕，哪一個比較大？",
+                "options": ["三分之一個蛋糕比較大", "兩個一樣大", "二分之一個蛋糕比較大", "無法比較"],
+                "answer": 2,
+                "rationale": "二分之一是和 1 個人平分（共2人分），分到的人比較少，所以拿到的那一塊會比較大。"
+            },
+            {
+                "question": "「八分之一」條繩子和「五分之一」條繩子，哪一條比較短？",
+                "options": ["五分之一條繩子比較短", "兩條一樣長", "數字大的那一條比較長", "八分之一條繩子比較短"],
+                "answer": 3,
+                "rationale": "相同的繩子如果平分剪成 8 段，每一段的長度一定會比只剪成 5 段還要短。"
+            },
+            {
+                "question": "有兩張一模一樣大的色紙。甲色紙平分成 4 份，乙色紙平分成 6 份。請問哪一張色紙分出來的「其中1份」會比較小？",
+                "options": ["乙色紙分出來的比較小", "甲色紙分出來的比較小", "兩張分出來的一樣大", "沒辦法比"],
+                "answer": 0,
+                "rationale": "乙色紙被平分成了較多的 6 份，所以它的其中一份會比只分成 4 份的甲色紙還要小。"
+            },
+            {
+                "question": "當分數上面的數字都是 1 的時候，如果橫線下面的數字越大，代表這個分數所表示的每 1 份會怎麼樣？",
+                "options": ["每一份越大", "每一份越小", "每一份都不變", "下面的數字越大就越多"],
+                "answer": 1,
+                "rationale": "橫線下方的數字是總平分份數，當分給越多份時，分出來的每一單份就會縮得越小。"
+            },
+            {
+                "question": "弟弟有一盒巧克力，他平分切成 10 塊，吃了其中的 1 塊。請問他吃了幾盒巧克力？",
+                "options": ["一分之十盒", "十分之一盒", "10 盒", "1 盒"],
+                "answer": 1,
+                "rationale": "巧克力整盒被平分成 10 塊，吃了 1 塊就是吃了總數的十分之一盒。"
+            },
+            {
+                "question": "妹妹手上有 5 個「五分之一塊」的積木模型，如果把它們全部拼在一起，會剛好變成幾個完整的積木模型？",
+                "options": ["1 個", "5 個", "25 個", "0 個"],
+                "answer": 0,
+                "rationale": "五分之一代表把一個整體平分成 5 份，當這 5 份全部收集齊全拼回去時，就剛好變回 1 個完整的整體。"
+            },
+            {
+                "question": "如果想拼回一整個完整的圓形蔥油餅，總共需要幾個「八分之一個」蔥油餅？",
+                "options": ["1 個", "4 個", "8 個", "2 個"],
+                "answer": 2,
+                "rationale": "下面寫 8 表示將蔥油餅平分成 8 等份，所以需要把這 8 等份全部湊齊才能還原成一整張餅。"
+            },
+            {
+                "question": "老師拿了一條長繩子，隨意剪了三刀變成四段，每段長度都不太一樣。其中任意一段可以叫作「四分之一條」繩子嗎？",
+                "options": ["可以，因為總共變成了四段", "可以，因為只要有剪開就可以用分數", "不可以，因為剪出來的每一段沒有一樣長，這不叫平分", "不一定，要看是用什麼剪刀剪的"],
+                "answer": 2,
+                "rationale": "分數的基本要求就是每份大小必須完全相同，長短不一就不能用標準分數表示。"
+            },
+            {
+                "question": "下列哪一個分數所代表的大小是「最小」的？",
+                "options": ["十分之一", "二分之一", "三分之一", "五分之一"],
+                "answer": 0,
+                "rationale": "橫線下方的數字 10 代表平分成高達 10 塊，切得越多塊，每一塊分到的量就最少。"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `第 ${currentQuestionIndex + 1} / ${questions.length} 題`;
+            document.getElementById("question-text").innerText = currentQuestion.question;
+            
+            const optionsBox = document.getElementById("options-box");
+            optionsBox.innerHTML = "";
+            
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.className = "option-btn";
+                button.innerText = option;
+                button.onclick = () => selectOption(index);
+                optionsBox.appendChild(button);
+            });
+            
+            document.getElementById("feedback-text").style.display = "none";
+            document.getElementById("next-button").style.display = "none";
+        }
+
+        function selectOption(selectedIndex) {
+            if (answered) return;
+            answered = true;
+            
+            const currentQuestion = Math.min(currentQuestionIndex, questions.length - 1);
+            const qData = questions[currentQuestion];
+            const buttons = document.getElementsByClassName("option-btn");
+            const feedbackBox = document.getElementById("feedback-text");
+            
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+            
+            if (selectedIndex === qData.answer) {
+                buttons[selectedIndex].classList.add("correct");
+                feedbackBox.className = "feedback-box correct";
+                feedbackBox.innerHTML = `<strong>⭕ 答對了！觀念非常清楚！</strong><br>${qData.rationale}`;
+                score += 5;
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedbackBox.className = "feedback-box wrong";
+                feedbackBox.innerHTML = `<strong>❌ 答錯囉！請看這裡的解說：</strong><br>${qData.rationale}`;
+            }
+            
+            feedbackBox.style.display = "block";
+            document.getElementById("next-button").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "block";
+            document.getElementById("final-score").innerText = `${score} 分`;
+            
+            const evaluationText = document.getElementById("evaluation-text");
+            if (score === 100) {
+                evaluationText.innerText = "太棒了！你已經完全掌握分數的核心秘訣「平分」了！💯";
+            } else if (score >= 80) {
+                evaluationText.innerText = "非常優秀！你很清楚橫線上下數字代表的意義，繼續保持！🌟";
+            } else if (score >= 60) {
+                evaluationText.innerText = "順利及格！記得「平分成越多份，每一份反而會越小」這個重要觀念喔！👍";
+            } else {
+                evaluationText.innerText = "再接再厲！可以用圓形的紙片自己動手剪剪看，會更好理解喔！💪";
+            }
+        }
+
+        function restartQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            document.getElementById("result-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
