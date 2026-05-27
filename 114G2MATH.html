@@ -1,0 +1,2797 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國小二年級數學 暑假線上測驗</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, '微軟正黑體';
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        
+        /* 目錄頁的網格排版，讓 13 個按鈕整齊排列 */
+        #unit-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .unit-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: 0.3s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .unit-btn:hover { background-color: #2980b9; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(41, 128, 185, 0.4); }
+        
+        .question-box {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+        .option-label {
+            display: block;
+            background: #ecf0f1;
+            padding: 18px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: 0.2s;
+            border: 2px solid transparent;
+        }
+        .option-label:hover { background: #dcdde1; border-color: #bdc3c7; }
+        input[type="radio"] { margin-right: 15px; transform: scale(1.5); }
+        
+        .btn-submit, .btn-next, .btn-menu {
+            display: block;
+            width: 100%;
+            border: none;
+            padding: 18px;
+            font-size: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 25px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-submit { background-color: #27ae60; color: white; }
+        .btn-submit:hover { background-color: #219150; }
+        
+        .btn-next { background-color: #f39c12; color: white; display: none; }
+        .btn-next:hover { background-color: #d68910; }
+
+        .btn-menu { 
+            background-color: #8e44ad; 
+            color: white; 
+            margin-top: 40px;
+            box-shadow: 0 5px 15px rgba(142, 68, 173, 0.4);
+        }
+        .btn-menu:hover { background-color: #732d91; transform: translateY(-2px); }
+
+        #feedback {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+            font-size: 18px;
+        }
+        .correct { background-color: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
+        .incorrect { background-color: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        
+        #score-board {
+            text-align: center;
+            padding: 20px 0;
+        }
+        
+        .menu-screen, .quiz-screen, .score-screen { display: none; }
+        .active-screen { display: block !important; }
+        
+        .score-display {
+            font-size: 72px; 
+            margin: 30px 0; 
+            font-weight: 900; 
+            color: #e74c3c;
+            background: #fdf0ed;
+            padding: 20px;
+            border-radius: 15px;
+            display: inline-block;
+            min-width: 300px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="menu-screen" class="menu-screen active-screen">
+        <h1>國小二年級數學 暑假測驗</h1>
+        <p style="text-align: center; font-size: 20px; color: #555; margin-bottom: 30px;">請點擊下方按鈕選擇測驗單元：</p>
+        <div id="unit-buttons">
+            </div>
+    </div>
+
+    <div id="quiz-screen" class="quiz-screen">
+        <button onclick="returnToMenu()" style="margin-bottom: 20px; cursor: pointer; padding: 10px 15px; background: #ecf0f1; border: 1px solid #bdc3c7; border-radius: 8px; font-weight: bold; color: #2c3e50;">🔙 中斷測驗，返回目錄</button>
+        
+        <h2 id="current-unit-title" style="color: #2980b9; font-size: 28px; border-bottom: 2px solid #3498db; padding-bottom: 10px;">單元名稱</h2>
+        <p style="font-weight: bold; color: #7f8c8d; font-size: 18px;">目前進度： <span id="progress" style="color: #e67e22; font-size: 22px;">1 / 20</span></p>
+        
+        <div class="question-box" id="question-text">題目文字</div>
+        <div id="options-container">
+            </div>
+        
+        <button id="submit-btn" class="btn-submit" onclick="checkAnswer()">確認答案</button>
+        
+        <div id="feedback">回饋訊息</div>
+        <button id="next-btn" class="btn-next" onclick="nextQuestion()">下一題</button>
+    </div>
+
+    <div id="score-board" class="score-screen">
+        <h2 style="font-size: 36px; color: #27ae60;">🎉 測驗結束！</h2>
+        <p style="font-size: 22px; color: #555; margin-top: 20px;">你的成績（答對題數 / 總共題數）：</p>
+        
+        <div class="score-display" id="final-score">
+            0 / 20
+        </div>
+        
+        <p id="score-message" style="font-size: 22px; font-weight: bold; margin-bottom: 20px;"></p>
+        
+        <button class="btn-menu" onclick="returnToMenu()">🏠 返回目錄頁，選擇其他單元</button>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // 13 個單元的資料區（請將各單元的 20 題貼入對應的 questions 陣列中）
+    // ==========================================
+    const quizData = {
+        "unit1": {
+            "title": "二下 第一單元：1000以內的數",
+            "questions": [
+                {
+                    "question": "數字「385」是由幾個百、幾個十和幾個一組成的？",
+                    "answerOptions": [
+                        { "text": "3個百、8個十和5個一", "rationale": "百位數是3代表3個百，十位數是8代表8個十，個位數是5代表5個一。", "isCorrect": true },
+                        { "text": "5個百、8個十和3個一", "rationale": "這是把百位和個位看反了。", "isCorrect": false },
+                        { "text": "3個百、5個十和8個一", "rationale": "這是把十位和個位看反了。", "isCorrect": false },
+                        { "text": "38個百和5個一", "rationale": "38個百是3800，數字沒有那麼大喔。", "isCorrect": false }
+                    ],
+                    "hint": "看清楚百位、十位、個位上面的數字各是多少喔！"
+                },
+                {
+                    "question": "國語讀作「四百零六」的數字，記成阿拉伯數字應該怎麼寫？",
+                    "answerOptions": [
+                        { "text": "46", "rationale": "46是四十六，這是一個二位數。", "isCorrect": false },
+                        { "text": "460", "rationale": "460讀作四百六十，結尾是零，不是四百零六。", "isCorrect": false },
+                        { "text": "406", "rationale": "四百代表百位是4，零代表十位是0，六代表個位是6，所以是406。", "isCorrect": true },
+                        { "text": "4006", "rationale": "4006是四千零六，數字變太大了。", "isCorrect": false }
+                    ],
+                    "hint": "聽到「零」，代表中間的「十位數」要放什麼數字呢？"
+                },
+                {
+                    "question": "阿拉伯數字「750」應該怎麼讀？",
+                    "answerOptions": [
+                        { "text": "七五零", "rationale": "這是單純讀出數字，不是正確的國字讀法。", "isCorrect": false },
+                        { "text": "七百零五", "rationale": "七百零五寫作705，不是750。", "isCorrect": false },
+                        { "text": "七百五十", "rationale": "百位是7讀作七百，十位是5讀作五十，個位是0不用讀，所以是七百五十。", "isCorrect": true },
+                        { "text": "七百五", "rationale": "在數學上，我們要完整讀作七百五十才對喔。", "isCorrect": false }
+                    ],
+                    "hint": "注意看，十位數是5，個位數是0，合起來是多少？"
+                },
+                {
+                    "question": "關於三位數「603」，下面哪一個說法是正確的？",
+                    "answerOptions": [
+                        { "text": "它的十位數是 0，代表有 0 個十", "rationale": "十位數上的數字是0，代表這個數沒有十位數的量（0個十）。", "isCorrect": true },
+                        { "text": "它只有百位和個位，所以是一個二位數", "rationale": "雖然十位是0，但它依然佔了一個位置，所以是三位數。", "isCorrect": false },
+                        { "text": "這個數讀作六百三十", "rationale": "六百三十寫作630，3在十位。", "isCorrect": false },
+                        { "text": "它是由 6 個百和 3 個十組成的", "rationale": "3是在個位，代表3個一，不是3個十。", "isCorrect": false }
+                    ],
+                    "hint": "看清楚 0 在哪一個位數上，它代表什麼意思呢？"
+                },
+                {
+                    "question": "媽媽的皮包裡有 3 張 100 元、7 個 10 元和 2 個 1 元，媽媽一共有幾元？",
+                    "answerOptions": [
+                        { "text": "372 元", "rationale": "3張100元是300，7個10元是70，2個1元是2，合起來是 372 元。", "isCorrect": true },
+                        { "text": "327 元", "rationale": "這是把十元和一元算反了。", "isCorrect": false },
+                        { "text": "732 元", "rationale": "這是把百元和十元算反了。", "isCorrect": false },
+                        { "text": "12 元", "rationale": "這是把 3、7、2 直接加起來了，忘記錢幣有大有小。", "isCorrect": false }
+                    ],
+                    "hint": "把百位放3，十位放7，個位放2，組起來是多少？"
+                },
+                {
+                    "question": "皮皮的存錢筒裡有 8 張 100 元和 5 個 1 元，裡面沒有 10 元。皮皮一共有幾元？",
+                    "answerOptions": [
+                        { "text": "850 元", "rationale": "850元需要5個10元，但題目說沒有10元。", "isCorrect": false },
+                        { "text": "85 元", "rationale": "85元只有8個10元，題目是8張100元喔。", "isCorrect": false },
+                        { "text": "805 元", "rationale": "8張100元是800，沒有10元（十位記0），5個1元是5，合起來是805元。", "isCorrect": true },
+                        { "text": "855 元", "rationale": "這比皮皮擁有的錢還要多。", "isCorrect": false }
+                    ],
+                    "hint": "「沒有10元」代表十位數要填上什麼數字來當作位置呢？"
+                },
+                {
+                    "question": "按照「十個十個一數」的規律填填看：370 － 380 － 390 － ( )。括號裡應該填入什麼數字？",
+                    "answerOptions": [
+                        { "text": "391", "rationale": "這是加1，題目規律是十個十個數。", "isCorrect": false },
+                        { "text": "400", "rationale": "390 再加 10，十位滿十要進位到百位，變成 400。", "isCorrect": true },
+                        { "text": "300", "rationale": "數字應該要變大，不是變小。", "isCorrect": false },
+                        { "text": "410", "rationale": "這跳得太多了，多加了20。", "isCorrect": false }
+                    ],
+                    "hint": "390 再多 10 個，會變成哪一個整百的數字呢？"
+                },
+                {
+                    "question": "按照數字規律倒著數數看：602 － 601 － 600 － ( )。括號裡應該填什麼數字？",
+                    "answerOptions": [
+                        { "text": "500", "rationale": "這少了一百，應該只少1。", "isCorrect": false },
+                        { "text": "599", "rationale": "600 減少 1（往回數一個）就是 599。", "isCorrect": true },
+                        { "text": "601", "rationale": "這是往回數兩個，不符合連續的規律。", "isCorrect": false },
+                        { "text": "610", "rationale": "這是變大，題目是越來越小喔。", "isCorrect": false }
+                    ],
+                    "hint": "600 減掉 1，百位和十位都會改變喔，再想一下。"
+                },
+                {
+                    "question": "數學課學到的「10個一百」合起來是多少？",
+                    "answerOptions": [
+                        { "text": "一百（100）", "rationale": "這只有1個一百。", "isCorrect": false },
+                        { "text": "一千（1000）", "rationale": "10個一百就是一千（1000），這是一個四位數。", "isCorrect": true },
+                        { "text": "九百（900）", "rationale": "9個一百才是九百。", "isCorrect": false },
+                        { "text": "一萬（10000）", "rationale": "10個一千才是一萬。", "isCorrect": false }
+                    ],
+                    "hint": "數數看：100, 200, 300...一直數到第10個是多大的數？"
+                },
+                {
+                    "question": "比較大小：501 和 499 哪一個數字比較大？",
+                    "answerOptions": [
+                        { "text": "501", "rationale": "比較三位數大小要先看百位。501 的百位是 5，499 的百位是 4。因為 5 > 4，所以 501 比較大。", "isCorrect": true },
+                        { "text": "499", "rationale": "雖然 499 後面的 99 看起來很大，但它的百位只有 4，比 501 小。", "isCorrect": false },
+                        { "text": "一樣大", "rationale": "這兩個是不同的數字，不一樣大。", "isCorrect": false },
+                        { "text": "無法比較", "rationale": "可以直接比出大小。", "isCorrect": false }
+                    ],
+                    "hint": "比大小要從最大的地方（最左邊的百位數）開始比喔！"
+                },
+                {
+                    "question": "比較大小：872 和 875 哪一個數字比較「小」？",
+                    "answerOptions": [
+                        { "text": "875", "rationale": "875 的個位是 5，比 872 大。", "isCorrect": false },
+                        { "text": "一樣小", "rationale": "這兩個數字不相等。", "isCorrect": false },
+                        { "text": "872", "rationale": "兩數的百位（8）和十位（7）都一樣，看個位，2 比 5 小，所以 872 比較小。", "isCorrect": true },
+                        { "text": "無法判斷", "rationale": "看個位就可以分出大小了。", "isCorrect": false }
+                    ],
+                    "hint": "注意！題目是問哪一個比較「小」喔！當百位和十位一樣時，要比哪裡？"
+                },
+                {
+                    "question": "在三位數「926」中，百位數的「9」代表多少？",
+                    "answerOptions": [
+                        { "text": "9", "rationale": "如果只是 9，那是在個位的位置。", "isCorrect": false },
+                        { "text": "90", "rationale": "90 代表 9 個十，那要在十位的位置。", "isCorrect": false },
+                        { "text": "900", "rationale": "9 在百位，代表有 9 個百，也就是 900。", "isCorrect": true },
+                        { "text": "100", "rationale": "百位的單位是百，但這裡有9個。", "isCorrect": false }
+                    ],
+                    "hint": "數字在不同的位置，代表的價值就不一樣。9在百位，所以是多少？"
+                },
+                {
+                    "question": "小明有「2、8、5」三張數字卡。他想排成一個三位數，請問能排出的「最大」數字是多少？",
+                    "answerOptions": [
+                        { "text": "258", "rationale": "這是把最小的數字放百位，排出來反而是最小的。", "isCorrect": false },
+                        { "text": "825", "rationale": "雖然百位放了8，但十位放2不是剩下的最大數字。", "isCorrect": false },
+                        { "text": "852", "rationale": "想要數字最大，要把最大的數字（8）放百位，第二大的（5）放十位，最小的（2）放個位，所以是852。", "isCorrect": true },
+                        { "text": "582", "rationale": "百位放5比放8還要小。", "isCorrect": false }
+                    ],
+                    "hint": "想要數字最大，百位數一定要選最大的數字卡來放！"
+                },
+                {
+                    "question": "小華用「4、1、7」三張數字卡。他想排成一個三位數，請問能排出的「最小」數字是多少？",
+                    "answerOptions": [
+                        { "text": "147", "rationale": "想要數字最小，要把最小的（1）放百位，第二小的（4）放十位，最大的（7）放個位，所以是147。", "isCorrect": true },
+                        { "text": "741", "rationale": "這是排出的最大數字。", "isCorrect": false },
+                        { "text": "174", "rationale": "十位放7比放4還要大，所以這不是最小的。", "isCorrect": false },
+                        { "text": "417", "rationale": "百位放4不夠小。", "isCorrect": false }
+                    ],
+                    "hint": "想要數字最小，要把最小的數字卡放在最前面（百位）喔！"
+                },
+                {
+                    "question": "書局裡一本故事書賣 340 元，一盒彩色筆賣 304 元。請問哪一個比較便宜？",
+                    "answerOptions": [
+                        { "text": "故事書", "rationale": "故事書 340 元比彩色筆 304 元還要貴。", "isCorrect": false },
+                        { "text": "彩色筆", "rationale": "比較兩者價格：340 和 304。百位一樣是3，十位 0 比 4 小，所以 304 比較小，彩色筆比較便宜。", "isCorrect": true },
+                        { "text": "一樣便宜", "rationale": "兩個東西價格不同。", "isCorrect": false },
+                        { "text": "沒辦法比較", "rationale": "看十位數字就能比出大小。", "isCorrect": false }
+                    ],
+                    "hint": "「便宜」代表數字比較小。比比看 340 和 304 哪一個數字小？"
+                },
+                {
+                    "question": "按照「五個五個一數」的規律數數看：745 － 750 － 755 － ( )。括號裡應該填什麼？",
+                    "answerOptions": [
+                        { "text": "756", "rationale": "這只有多1個。", "isCorrect": false },
+                        { "text": "760", "rationale": "755 再往後數 5 個，就是 760。", "isCorrect": true },
+                        { "text": "770", "rationale": "這多加了15個，跳太多了。", "isCorrect": false },
+                        { "text": "800", "rationale": "這是不正確的數字。", "isCorrect": false }
+                    ],
+                    "hint": "看個位的變化：5 -> 0 -> 5 -> ？，或者是 55 再加 5 是多少？"
+                },
+                {
+                    "question": "數字「990」再加 10 個（也就是再多1個十），會變成是多少？",
+                    "answerOptions": [
+                        { "text": "991", "rationale": "這是加1的結果。", "isCorrect": false },
+                        { "text": "900", "rationale": "這是變小了。", "isCorrect": false },
+                        { "text": "1000", "rationale": "990 的十位有 9 個十，再加 1 個十變成 10 個十，要進位到百位；百位原本有 9 個百，加上進位變成 10 個百，再進位到千位，所以是 1000。", "isCorrect": true },
+                        { "text": "9910", "rationale": "這寫法是把10直接貼在後面，是不對的位值寫法。", "isCorrect": false }
+                    ],
+                    "hint": "990 接下來十個十個數，下一個大數字是什麼？"
+                },
+                {
+                    "question": "下面哪一個數字的「十位數」是 8？",
+                    "answerOptions": [
+                        { "text": "821", "rationale": "這個數字的 8 在百位。", "isCorrect": false },
+                        { "text": "281", "rationale": "281 的百位是 2，十位是 8，個位是 1，所以十位數是 8。", "isCorrect": true },
+                        { "text": "218", "rationale": "這個數字的 8 在個位。", "isCorrect": false },
+                        { "text": "808", "rationale": "雖然它有很多8，但這是誘答選項，找位值最明確的一個。", "isCorrect": false }
+                    ],
+                    "hint": "三位數從右邊數過來，第二個位置就是十位喔！"
+                },
+                {
+                    "question": "老師在黑板上畫了一條數線，上面有一個刻度剛好在 500 和 600 的「正中間」。請問這個刻度代表多少？",
+                    "answerOptions": [
+                        { "text": "510", "rationale": "510 離 500 很近，不在正中間。", "isCorrect": false },
+                        { "text": "550", "rationale": "500 和 600 之間相差 100，它的一半是 50，所以正中間就是 500 + 50 = 550。", "isCorrect": true },
+                        { "text": "505", "rationale": "505 是 500 和 510 的正中間。", "isCorrect": false },
+                        { "text": "650", "rationale": "650 已經超過 600 了。", "isCorrect": false }
+                    ],
+                    "hint": "想一想，50個和50個，剛好把100分成兩半。"
+                },
+                {
+                    "question": "按照「一百一百一數」的規律填填看：400 － 500 － 600 － ( ) － 800。括號裡應該填什麼？",
+                    "answerOptions": [
+                        { "text": "610", "rationale": "這只有多10，題目是一百一百增加。", "isCorrect": false },
+                        { "text": "700", "rationale": "600 的百位加 1（也就是再多100）就是 700。", "isCorrect": true },
+                        { "text": "601", "rationale": "這只有多1。", "isCorrect": false },
+                        { "text": "900", "rationale": "這跳過了 700，不符合順序。", "isCorrect": false }
+                    ],
+                    "hint": "注意看百位數字的規律：4 -> 5 -> 6 -> ？ -> 8。"
+                }
+            ]
+        },
+        "unit2": {
+            "title": "二下 第二單元：重量",
+            "questions": [
+                {
+                    "question": "把蘋果和草莓分別放在天平的左、右兩邊，結果放蘋果的那一端向下垂。這代表什麼意思？",
+                    "answerOptions": [
+                        { "text": "蘋果比草莓重", "rationale": "在天平上，比較重的一邊會往下沉（向下垂）。", "isCorrect": true },
+                        { "text": "草莓比蘋果重", "rationale": "如果草莓比較重，草莓那邊應該會往下沉。", "isCorrect": false },
+                        { "text": "蘋果和草莓一樣重", "rationale": "如果一樣重，天平會是平的，不會歪向一邊。", "isCorrect": false },
+                        { "text": "沒辦法比較", "rationale": "天平就是用來比較重量的工具，下沉的一方就是比較重。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "小貓和小狗在公園玩翹翹板，小貓那一邊翹得高高的，小狗那一邊沉在下面。這代表什麼？",
+                    "answerOptions": [
+                        { "text": "小貓比較重", "rationale": "比較重的一方會把翹翹板壓下去。", "isCorrect": false },
+                        { "text": "小貓比較輕", "rationale": "翹翹板和天平一樣，比較輕的那一邊會往上翹。", "isCorrect": true },
+                        { "text": "兩隻動物一樣重", "rationale": "如果一樣重，翹翹板會保持平衡。", "isCorrect": false },
+                        { "text": "小狗比較輕", "rationale": "小狗在下面，代表小狗比較重。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "天平的左邊放了一塊橡皮擦，右邊放了 3 個一元硬幣，結果天平沒有歪斜，是平平的。這表示什麼？",
+                    "answerOptions": [
+                        { "text": "橡皮擦比較重", "rationale": "如果橡皮擦比較重，左邊會下沉。", "isCorrect": false },
+                        { "text": "3 個一元硬幣比較重", "rationale": "如果硬幣比較重，右邊會下沉。", "isCorrect": false },
+                        { "text": "橡皮擦和 3 個一元硬幣一樣重", "rationale": "天平保持水平（平平的），就代表左右兩邊的東西重量完全一樣。", "isCorrect": true },
+                        { "text": "天平壞掉了", "rationale": "天平平衡代表兩邊等重，這是正常的現象。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "兩手各拿一本書，感覺左手的書比較壓手、拿的時候要用比較大的力氣。這代表左手的書比較怎樣？",
+                    "answerOptions": [
+                        { "text": "比較輕", "rationale": "比較輕的東西不需要用太大的力氣拿。", "isCorrect": false },
+                        { "text": "比較重", "rationale": "感覺比較壓手、費力，就是重量比較重的意思，這是「直接比較」。", "isCorrect": true },
+                        { "text": "比較大", "rationale": "大的東西不一定比較重，要看材質。", "isCorrect": false },
+                        { "text": "比較薄", "rationale": "書的厚薄不能完全代表重量。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "一個是吹得很大很大的氣球，另一個是小小的棒球。把它們拿在手上比比看，哪一個比較重？",
+                    "answerOptions": [
+                        { "text": "大氣球比較重", "rationale": "氣球裡面只有空氣，雖然很大，但非常輕。", "isCorrect": false },
+                        { "text": "棒球比較重", "rationale": "棒球雖然體積小，但材質結實，拿在手上會比氣球重很多。所以看起來大的東西不一定比較重！", "isCorrect": true },
+                        { "text": "一樣重", "rationale": "兩者的材質差很多，重量不會一樣。", "isCorrect": false },
+                        { "text": "不能比較", "rationale": "拿在手上（實測）就可以比較出重量了。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "用花片來量重量。甲蘋果和 6 個花片一樣重，乙蘋果和 8 個花片一樣重。哪一個蘋果比較「輕」？",
+                    "answerOptions": [
+                        { "text": "甲蘋果", "rationale": "甲蘋果只需要 6 個花片就能平衡，6 小於 8，代表甲蘋果比較輕。", "isCorrect": true },
+                        { "text": "乙蘋果", "rationale": "乙蘋果需要比較多的花片，所以比較重。", "isCorrect": false },
+                        { "text": "一樣輕", "rationale": "需要的花片數量不同，重量就不一樣。", "isCorrect": false },
+                        { "text": "沒辦法判斷", "rationale": "因為都是用相同的花片來量，所以可以直接比較數量。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "爸爸比媽媽重，媽媽又比哥哥重。請問這三個人誰最重？",
+                    "answerOptions": [
+                        { "text": "媽媽", "rationale": "媽媽雖然比哥哥重，但她比爸爸輕。", "isCorrect": false },
+                        { "text": "哥哥", "rationale": "哥哥比媽媽輕，是三人裡面最輕的。", "isCorrect": false },
+                        { "text": "爸爸", "rationale": "爸爸大於媽媽，媽媽大於哥哥，所以爸爸大於哥哥，爸爸是最重的。這是重量的遞移關係。", "isCorrect": true },
+                        { "text": "一樣重", "rationale": "題目已經明確說出誰比誰重了。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "桌上有兩袋完全一樣的彈珠，甲袋裝了 10 顆，乙袋裝了 15 顆。哪一袋比較重？",
+                    "answerOptions": [
+                        { "text": "甲袋", "rationale": "甲袋的數量比較少，所以比較輕。", "isCorrect": false },
+                        { "text": "乙袋", "rationale": "因為裝的是「完全一樣」的彈珠，所以數量越多（15 > 10），總重量就越重。", "isCorrect": true },
+                        { "text": "一樣重", "rationale": "顆數不同，重量就會不同。", "isCorrect": false },
+                        { "text": "無法比較", "rationale": "因為內容物是一樣的，可以直接比數量。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "天平左邊放 1 瓶水，右邊要放 4 顆蘋果才會平衡（平平的）。如果天平左邊改成放 2 瓶一樣的水，右邊要放幾顆蘋果才會平衡？",
+                    "answerOptions": [
+                        { "text": "4 顆", "rationale": "這是 1 瓶水需要的蘋果數量。", "isCorrect": false },
+                        { "text": "6 顆", "rationale": "這只多加了 2 顆蘋果。", "isCorrect": false },
+                        { "text": "8 顆", "rationale": "1 瓶水 = 4 顆蘋果。2 瓶水就是兩個 4 顆蘋果，4 + 4 = 8，需要 8 顆蘋果才會平衡。", "isCorrect": true },
+                        { "text": "2 顆", "rationale": "這是水的瓶數。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "量重量時，我們為什麼要用「一樣大」的積木來量，而不能用大小不一樣的石頭來量？",
+                    "answerOptions": [
+                        { "text": "因為積木比較漂亮", "rationale": "外觀漂不漂亮不影響測量。", "isCorrect": false },
+                        { "text": "因為一樣大的積木重量都相同，才能準確比較", "rationale": "測量重量必須使用「固定的單位（重量相等的物品）」，否則量出來的數量就沒有比較的意義了。", "isCorrect": true },
+                        { "text": "因為石頭太髒了", "rationale": "這不是數學上的原因。", "isCorrect": false },
+                        { "text": "因為石頭會弄壞天平", "rationale": "天平沒有那麼容易壞，重點是單位的重量不統一。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "一根香蕉和 5 個積木一樣重，一顆橘子和 4 個積木一樣重。把它們「一起」放在天平的左邊，右邊要放幾個積木才會平衡？",
+                    "answerOptions": [
+                        { "text": "1 個積木", "rationale": "這是相減的結果（誰比誰重多少）。", "isCorrect": false },
+                        { "text": "5 個積木", "rationale": "這只有香蕉的重量。", "isCorrect": false },
+                        { "text": "9 個積木", "rationale": "把它們放在一起，重量就是相加：5 + 4 = 9，所以需要 9 個積木。", "isCorrect": true },
+                        { "text": "10 個積木", "rationale": "加法計算錯誤。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "哥哥的鉛筆盒和 12 個積木一樣重。他把一塊橡皮擦拿出來後，剩下的鉛筆盒變成和 10 個積木一樣重。請問這塊橡皮擦和幾個積木一樣重？",
+                    "answerOptions": [
+                        { "text": "22 個", "rationale": "這是用加法算出來的錯誤答案。", "isCorrect": false },
+                        { "text": "10 個", "rationale": "這是剩下的重量。", "isCorrect": false },
+                        { "text": "12 個", "rationale": "這是原本的總重量。", "isCorrect": false },
+                        { "text": "2 個", "rationale": "拿走橡皮擦後少了 2 個積木的重量（12 - 10 = 2），代表橡皮擦和 2 個積木一樣重。", "isCorrect": true }
+                    ]
+                },
+                {
+                    "question": "天平左邊放一個木塊，右邊放一個鐵塊，天平是平的（一樣重）。現在如果把左邊的木塊切掉一半拿走，天平會變成怎樣？",
+                    "answerOptions": [
+                        { "text": "左邊的木塊會往下沉", "rationale": "木塊變輕了，應該會往上翹。", "isCorrect": false },
+                        { "text": "右邊的鐵塊會往下沉", "rationale": "原本一樣重，左邊拿走一半變輕了，所以右邊的鐵塊相對比較重，就會往下沉。", "isCorrect": true },
+                        { "text": "還是平平的", "rationale": "重量改變了，不可能繼續保持平衡。", "isCorrect": false },
+                        { "text": "天平會壞掉", "rationale": "天平只會傾斜，不會壞掉。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "媽媽把一塊黏土揉成圓球形狀，量一量和 5 顆彈珠一樣重。如果媽媽把這塊黏土壓成扁扁的餅乾形狀，它的重量會改變嗎？",
+                    "answerOptions": [
+                        { "text": "會變輕，因為壓扁了", "rationale": "形狀改變不會影響重量。", "isCorrect": false },
+                        { "text": "會變重，因為看起來比較寬", "rationale": "形狀改變不會影響重量。", "isCorrect": false },
+                        { "text": "不會，還是和 5 顆彈珠一樣重", "rationale": "只要沒有把黏土捏掉或增加，不管形狀怎麼改變，它的總重量都保持不變（重量保留概念）。", "isCorrect": true },
+                        { "text": "不一定，要看壓得多扁", "rationale": "這跟壓多扁沒有關係。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "紅色積木和 3 顆彈珠一樣重，藍色積木和 2 顆彈珠一樣重。哪一種積木比較重？",
+                    "answerOptions": [
+                        { "text": "紅色積木", "rationale": "紅色積木需要 3 顆彈珠才平衡，藍色只要 2 顆。3 大於 2，所以紅色積木比較重。", "isCorrect": true },
+                        { "text": "藍色積木", "rationale": "藍色積木需要的彈珠比較少，所以比較輕。", "isCorrect": false },
+                        { "text": "一樣重", "rationale": "需要的彈珠數量不同，重量就不同。", "isCorrect": false },
+                        { "text": "不能比較", "rationale": "因為都是用彈珠來量，單位一樣就可以比較。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "甲杯子和 10 個花片一樣重，乙杯子和 10 個硬幣一樣重。可以說甲杯子和乙杯子一樣重嗎？",
+                    "answerOptions": [
+                        { "text": "可以，因為都是 10 個", "rationale": "數量雖然一樣，但測量的工具不一樣重，就不能直接比較。", "isCorrect": false },
+                        { "text": "不可以，因為花片和硬幣的重量不一樣", "rationale": "測量重量的「單位」不同（花片和硬幣的重量不同），就算數量一樣，總重量也不會相等。", "isCorrect": true },
+                        { "text": "可以，因為杯子看起來一樣", "rationale": "看起來一樣不代表重量一樣。", "isCorrect": false },
+                        { "text": "不可以，因為杯子裝的東西不一樣", "rationale": "題目是在量空杯子的重量，重點是單位的不同。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "天平的左邊放了 1 顆西瓜，右邊放了 10 顆蘋果，天平是平的。如果在左邊再加 1 顆一樣大的西瓜，右邊要加幾顆蘋果才會繼續保持平的？",
+                    "answerOptions": [
+                        { "text": "加 1 顆蘋果", "rationale": "加 1 顆西瓜的重量等於加 10 顆蘋果的重量。", "isCorrect": false },
+                        { "text": "加 10 顆蘋果", "rationale": "因為 1 顆西瓜 = 10 顆蘋果，左邊多加 1 顆西瓜，右邊也要多加 10 顆蘋果才能平衡。", "isCorrect": true },
+                        { "text": "加 20 顆蘋果", "rationale": "這是右邊總共要有的數量，但題目是問「要加幾顆」。", "isCorrect": false },
+                        { "text": "不用加", "rationale": "如果不加，天平左邊會下沉。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "小明說：「只要東西看起來比較大，就一定比較重。」這句話對嗎？",
+                    "answerOptions": [
+                        { "text": "對，大的東西一定比較重", "rationale": "物體的重量跟材質有關，不是只看大小。", "isCorrect": false },
+                        { "text": "對，小的東西一定比較輕", "rationale": "同上。", "isCorrect": false },
+                        { "text": "不對，像是很大團的棉花就比小小的鐵球輕", "rationale": "體積大不等於重量重，材質也是決定重量的關鍵。", "isCorrect": true },
+                        { "text": "不知道，要看顏色", "rationale": "顏色和重量無關。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "A 盒子加上 1 本字典的重量，等於 B 盒子加上 1 本字典的重量。請問 A 盒子和 B 盒子誰比較重？",
+                    "answerOptions": [
+                        { "text": "A 盒子比較重", "rationale": "如果在兩邊拿掉一樣重的字典，它們還是會一樣重。", "isCorrect": false },
+                        { "text": "B 盒子比較重", "rationale": "如果在兩邊拿掉一樣重的字典，它們還是會一樣重。", "isCorrect": false },
+                        { "text": "一樣重", "rationale": "根據等量公理，兩邊都減去相同的重量（1本字典），剩下的 A 盒子和 B 盒子重量就會相等。", "isCorrect": true },
+                        { "text": "無法比較", "rationale": "可以透過推理得知答案。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "邏輯推理題：1 隻小白兔和 3 隻小雞一樣重。1 隻小狗和 2 隻小白兔一樣重。請問 1 隻小狗和幾隻小雞一樣重？",
+                    "answerOptions": [
+                        { "text": "2 隻小雞", "rationale": "這是 1 隻小狗等於小白兔的數量。", "isCorrect": false },
+                        { "text": "3 隻小雞", "rationale": "這是 1 隻小白兔的重量。", "isCorrect": false },
+                        { "text": "5 隻小雞", "rationale": "這是把 2 和 3 加起來的錯誤結果。", "isCorrect": false },
+                        { "text": "6 隻小雞", "rationale": "1 隻小狗 = 2 隻小白兔。1 隻小白兔 = 3 隻小雞，所以 2 隻小白兔 = 3 + 3 = 6 隻小雞。", "isCorrect": true }
+                    ]
+                }
+            ]
+        },
+        "unit3": {
+            "title": "二下 第三單元：加加減減",
+            "questions": [
+                {
+                    "question": "算算看：235 ＋ 142 ＝ (　)",
+                    "answerOptions": [
+                        { "text": "377", "rationale": "個位 5+2=7，十位 3+4=7，百位 2+1=3，不用進位，答案是 377。", "isCorrect": true },
+                        { "text": "376", "rationale": "個位相加錯誤，5+2 是 7。", "isCorrect": false },
+                        { "text": "387", "rationale": "十位相加錯誤，3+4 是 7。", "isCorrect": false },
+                        { "text": "477", "rationale": "百位相加錯誤，2+1 是 3。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "算算看：368 ＋ 215 ＝ (　)",
+                    "answerOptions": [
+                        { "text": "573", "rationale": "個位相加 8+5=13，進位時忘記把十位的 1 加進去了。", "isCorrect": false },
+                        { "text": "583", "rationale": "個位 8+5=13（寫3進1），十位 6+1+1(進位)=8，百位 3+2=5，答案是 583。", "isCorrect": true },
+                        { "text": "593", "rationale": "十位相加計算錯誤。", "isCorrect": false },
+                        { "text": "683", "rationale": "進位進錯到百位了。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "算算看：176 ＋ 258 ＝ (　)",
+                    "answerOptions": [
+                        { "text": "334", "rationale": "百位忘記加上從十位進位過來的 1。", "isCorrect": false },
+                        { "text": "424", "rationale": "十位 7+5=12，加上個位進位的 1 是 13，這裡算錯了。", "isCorrect": false },
+                        { "text": "434", "rationale": "個位 6+8=14（寫4進1），十位 7+5+1=13（寫3進1），百位 1+2+1=4，答案是 434。", "isCorrect": true },
+                        { "text": "324", "rationale": "這是十位和百位都忘記加上進位的結果。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "算算看：689 － 345 ＝ (　)",
+                    "answerOptions": [
+                        { "text": "334", "rationale": "十位相加減計算錯誤，8-4 應該是 4。", "isCorrect": false },
+                        { "text": "344", "rationale": "個位 9-5=4，十位 8-4=4，百位 6-3=3，完全不需要退位，答案是 344。", "isCorrect": true },
+                        { "text": "444", "rationale": "百位 6-3 應該是 3，不是 4。", "isCorrect": false },
+                        { "text": "345", "rationale": "個位計算錯誤。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "算算看：543 － 217 ＝ (　)",
+                    "answerOptions": [
+                        { "text": "334", "rationale": "個位不夠減時，這是不借位直接用大數減小數（7-3）的常見錯誤。", "isCorrect": false },
+                        { "text": "326", "rationale": "個位 3 不夠減 7，向十位借 1 變成 13，13-7=6。十位剩 3，3-1=2。百位 5-2=3。答案是 326。", "isCorrect": true },
+                        { "text": "336", "rationale": "十位被借走了 1，忘記扣掉，直接用 4-1=3。", "isCorrect": false },
+                        { "text": "226", "rationale": "百位減法計算錯誤。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "算算看最容易出錯的減法：702 － 348 ＝ (　)",
+                    "answerOptions": [
+                        { "text": "446", "rationale": "這是百位和十位都忘記退位，或是直接用大數減小數的常見錯誤。", "isCorrect": false },
+                        { "text": "364", "rationale": "十位是 0，必須向百位借，借過來變成 10 再借給個位，十位應該剩 9。9-4=5，不是 6。", "isCorrect": false },
+                        { "text": "354", "rationale": "向百位借 1 給十位變成 10，再從十位借 1 給個位變成 12。個位 12-8=4；十位 9-4=5；百位 6-3=3。答案 354。", "isCorrect": true },
+                        { "text": "454", "rationale": "百位借給十位後，忘記把 7 減 1 變成 6。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "農場裡有 245 隻白羊和 138 隻黑羊，一共有幾隻羊？",
+                    "answerOptions": [
+                        { "text": "383 隻", "rationale": "求一共，用加法：245 + 138 = 383。", "isCorrect": true },
+                        { "text": "373 隻", "rationale": "十位忘記加上個位進位的 1。", "isCorrect": false },
+                        { "text": "107 隻", "rationale": "這是用減法算出來的，題目是問「一共」。", "isCorrect": false },
+                        { "text": "393 隻", "rationale": "十位進位計算錯誤。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "哥哥原本有 350 元，爸爸又給他 180 元，哥哥現在有幾元？",
+                    "answerOptions": [
+                        { "text": "430 元", "rationale": "百位相加時，忘記加上十位進位過來的 1。", "isCorrect": false },
+                        { "text": "530 元", "rationale": "求現在有多少，用加法：350 + 180 = 530。", "isCorrect": true },
+                        { "text": "170 元", "rationale": "這是用減法算出來的，爸爸給他錢，錢應該會變多。", "isCorrect": false },
+                        { "text": "520 元", "rationale": "十位 5+8 應該是 13，這裡算錯了。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "姐姐帶了 500 元去買書，花掉 230 元，還剩下幾元？",
+                    "answerOptions": [
+                        { "text": "730 元", "rationale": "花掉錢會變少，應該用減法，這裡是誤用加法。", "isCorrect": false },
+                        { "text": "370 元", "rationale": "十位用 10-3=7 後，百位沒有扣掉被借走的 1，直接 5-2=3。", "isCorrect": false },
+                        { "text": "270 元", "rationale": "求剩下多少，用減法：500 - 230 = 270。", "isCorrect": true },
+                        { "text": "330 元", "rationale": "減法計算錯誤。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "學校圖書館有 420 本故事書，繪本比故事書「少」 150 本，繪本有幾本？",
+                    "answerOptions": [
+                        { "text": "570 本", "rationale": "這是用加法算的。題目說繪本比較「少」，所以繪本數量不能比故事書多。", "isCorrect": false },
+                        { "text": "370 本", "rationale": "百位退位後忘記減 1，直接用 4-1=3。", "isCorrect": false },
+                        { "text": "270 本", "rationale": "求比較少的數量，用減法：420 - 150 = 270 本。", "isCorrect": true },
+                        { "text": "330 本", "rationale": "十位 2 不夠減 5，沒有正確退位。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "妹妹有 175 張貼紙，弟弟比她「多」 145 張，弟弟有幾張貼紙？",
+                    "answerOptions": [
+                        { "text": "30 張", "rationale": "這是用減法算的。題目說弟弟比較「多」，所以弟弟的數量應該更大。", "isCorrect": false },
+                        { "text": "310 張", "rationale": "十位 7+4=11，加上個位進位的 1 應該是 12，這裡少加了。", "isCorrect": false },
+                        { "text": "320 張", "rationale": "求比較多的數量，用加法：175 + 145 = 320 張。", "isCorrect": true },
+                        { "text": "220 張", "rationale": "百位忘記加上進位的 1。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "算式「500 － 240 ＝ 260」，下面哪一個算式可以當作它的「驗算」，用來檢查答案對不對？",
+                    "answerOptions": [
+                        { "text": "500 ＋ 240 ＝ 740", "rationale": "把全部去加上被減去的數字，無法檢查原算式。", "isCorrect": false },
+                        { "text": "260 ＋ 240 ＝ 500", "rationale": "減法的驗算可以用「差 + 減數 = 被減數」。把剩下的 260 和減去的 240 加起來，看有沒有等於原本的 500。", "isCorrect": true },
+                        { "text": "500 － 260 ＝ 260", "rationale": "這雖然是正確的算式（差與減數相等），但通常驗算是用加法把兩個較小的數合起來。", "isCorrect": false },
+                        { "text": "260 － 240 ＝ 20", "rationale": "兩個較小的數字相減無法還原成原本的被減數。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "在直式加法中，如果「個位」的數字相加剛好等於 10（例如 4＋6），應該怎麼辦？",
+                    "answerOptions": [
+                        { "text": "在個位寫下 10", "rationale": "一個位數只能填一個數字，不能填 10。", "isCorrect": false },
+                        { "text": "進位到十位，在十位加 1，個位寫 0", "rationale": "滿十進一，個位留下 0，把 1 個十進位到十位去相加。", "isCorrect": true },
+                        { "text": "進位到百位，在百位加 1，個位寫 0", "rationale": "個位滿十是進到十位，不是跳過十位進到百位。", "isCorrect": false },
+                        { "text": "把 10 丟掉，個位寫 0 就好", "rationale": "這樣答案就會少掉 10 了，必須進位。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "在直式減法中，如果「十位」的數字不夠減，要怎麼辦？",
+                    "answerOptions": [
+                        { "text": "直接用下面的大數字減上面的小數字", "rationale": "這是常見的計算錯誤，不可以顛倒減。", "isCorrect": false },
+                        { "text": "向個位借 1 變成 10", "rationale": "個位比十位小，不能向個位借。", "isCorrect": false },
+                        { "text": "向百位借 1，換成 10 個十", "rationale": "不夠減時，要向左邊更高一位的數（百位）借 1，1 個百可以換成 10 個十來幫忙減。", "isCorrect": true },
+                        { "text": "直接寫 0", "rationale": "不夠減不能當作 0，必須借位。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "小安想買一臺 850 元的腳踏車，他現在存了 600 元，還不夠幾元？",
+                    "answerOptions": [
+                        { "text": "1450 元", "rationale": "這是把兩個數字加起來了。小安不需要這麼多錢。", "isCorrect": false },
+                        { "text": "250 元", "rationale": "求相差的數量（還差多少），用減法：850 - 600 = 250 元。", "isCorrect": true },
+                        { "text": "350 元", "rationale": "百位減法計算錯誤。", "isCorrect": false },
+                        { "text": "200 元", "rationale": "十位減法計算錯誤，沒有把 50 算進去。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "遊樂園上午來了 345 人，下午來了 468 人，今天一共來了多少人？",
+                    "answerOptions": [
+                        { "text": "813 人", "rationale": "求一共，用加法：345 + 468 = 813。", "isCorrect": true },
+                        { "text": "713 人", "rationale": "百位 3+4=7，忘記加上十位進位過來的 1。", "isCorrect": false },
+                        { "text": "803 人", "rationale": "十位 4+6=10，加上進位的 1 應該是 11，這裡算錯了。", "isCorrect": false },
+                        { "text": "123 人", "rationale": "這是用減法（下午減上午）算的，題目是問一共。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "有一個數字，減掉 150 以後會等於 350。可以記成算式「(　) － 150 ＝ 350」，括號裡應該填什麼數字？",
+                    "answerOptions": [
+                        { "text": "200", "rationale": "這適用減法 350 - 150 算的。但被減數應該是最大的數字。", "isCorrect": false },
+                        { "text": "500", "rationale": "用加法還原（驗算的概念）：剩下的 350 加上被減掉的 150，350 + 150 = 500。原來有 500。", "isCorrect": true },
+                        { "text": "400", "rationale": "十位 5+5=10 忘了進位到百位。", "isCorrect": false },
+                        { "text": "450", "rationale": "計算錯誤。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "水果店進貨 600 顆蘋果，賣掉 375 顆後，還剩下幾顆？",
+                    "answerOptions": [
+                        { "text": "325 顆", "rationale": "百位被借走了1，剩下 5。5-3 應該是 2，不是 3。", "isCorrect": false },
+                        { "text": "235 顆", "rationale": "十位借了 1 給個位，應該剩 9，9-7=2。這裡是沒有扣掉借給個位的 1，直接用 10-7=3 算出的錯誤答案。", "isCorrect": false },
+                        { "text": "225 顆", "rationale": "連續退位：600 - 375 = 225。", "isCorrect": true },
+                        { "text": "975 顆", "rationale": "這是用加法算的，賣掉後數量會變少。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "甲數是 380，乙數比甲數「少」 120。請問乙數是多少？",
+                    "answerOptions": [
+                        { "text": "500", "rationale": "這是用加法（380+120）算的，但乙數應該比較少。", "isCorrect": false },
+                        { "text": "260", "rationale": "求比較小的乙數，用減法：380 - 120 = 260。", "isCorrect": true },
+                        { "text": "360", "rationale": "百位減法計算錯誤。", "isCorrect": false },
+                        { "text": "280", "rationale": "十位減法計算錯誤，沒有扣掉 20。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "媽媽帶了 900 元去超市，買菜花了 485 元，媽媽的錢包裡還剩下多少元？",
+                    "answerOptions": [
+                        { "text": "515 元", "rationale": "百位被借走 1 後剩下 8，8-4 應該是 4，這裡算成 5 了。", "isCorrect": false },
+                        { "text": "425 元", "rationale": "十位被借給個位 1 後剩下 9，9-8=1，這裡忘記借位，直接用 10-8=2。", "isCorrect": false },
+                        { "text": "415 元", "rationale": "求剩下多少，用減法，需連續借位：900 - 485 = 415 元。", "isCorrect": true },
+                        { "text": "1385 元", "rationale": "花了錢應該變少，這裡是誤用加法加起來了。", "isCorrect": false }
+                    ]
+                }
+            ]
+        },
+        "unit4": {
+            "title": "二下 第四單元：平面圖形與立體形體",
+            "questions": [
+                 {
+                    "question": "一個圖形有 3 條直直的邊和 3 個頂點，這個平面圖形叫作什麼？",
+                    "answerOptions": [
+                        { "text": "三角形", "rationale": "三角形的特徵就是有 3 條直直的邊和 3 個頂點。", "isCorrect": true },
+                        { "text": "正方形", "rationale": "正方形有 4 條邊和 4 個頂點。", "isCorrect": false },
+                        { "text": "長方形", "rationale": "長方形有 4 條邊和 4 個頂點。", "isCorrect": false },
+                        { "text": "圓形", "rationale": "圓形沒有直直的邊，也沒有頂點。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "有一個平面圖形有 4 條直直的邊，而且「4條邊都一樣長」，它還有 4 個頂點，它是什麼圖形？",
+                    "answerOptions": [
+                        { "text": "長方形", "rationale": "長方形雖然有 4 條邊，但通常是長長方方的，沒有 4 條邊都一樣長。", "isCorrect": false },
+                        { "text": "正方形", "rationale": "4 條邊都一樣長，且有 4 個頂點，這是正方形最重要的特徵。", "isCorrect": true },
+                        { "text": "三角形", "rationale": "三角形只有 3 條邊。", "isCorrect": false },
+                        { "text": "圓形", "rationale": "圓形是彎曲的，沒有直直的邊。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "數學課本的封面有 4 條直直的邊、4 個頂點，看起來長長方方的，這是什麼平面圖形？",
+                    "answerOptions": [
+                        { "text": "正方形", "rationale": "課本的邊沒有全部一樣長，所以不是正方形。", "isCorrect": false },
+                        { "text": "三角形", "rationale": "課本有 4 個角和 4 條邊，不是三角形。", "isCorrect": false },
+                        { "text": "長方形", "rationale": "長方形有 4 條直直的邊、4 個頂點，且長長方方的，像課本封面一樣。", "isCorrect": true },
+                        { "text": "圓形", "rationale": "圓形是圓的，課本是方方的。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "哪一種平面圖形完全沒有直直的邊，也沒有尖尖的頂點，外表看起來圓圓潤潤的？",
+                    "answerOptions": [
+                        { "text": "三角形", "rationale": "三角形有 3 條直直的邊。", "isCorrect": false },
+                        { "text": "長方形", "rationale": "長方形有 4 條直直的邊。", "isCorrect": false },
+                        { "text": "圓形", "rationale": "圓形是由彎曲的線組成的，沒有直邊，也沒有頂點。", "isCorrect": true },
+                        { "text": "正方形", "rationale": "正方形有 4 條直直的邊。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "小明拿一個十元硬幣貼在紙上，用鉛筆沿著硬幣的邊緣畫一圈，可以得到哪一種平面圖形？",
+                    "answerOptions": [
+                        { "text": "圓形", "rationale": "硬幣的面是圓圓的，所以沿著邊緣描出來的圖形是圓形。", "isCorrect": true },
+                        { "text": "正方形", "rationale": "硬幣不是方方的，畫不出正方形。", "isCorrect": false },
+                        { "text": "長方形", "rationale": "硬幣畫不出長長方方的圖形。", "isCorrect": false },
+                        { "text": "三角形", "rationale": "硬幣沒有三個尖尖的角。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "拿一個骰子（正方體）壓在紙上，用鉛筆沿著它其中一個平平的面畫一圈，印出來的會是什麼圖形？",
+                    "answerOptions": [
+                        { "text": "長方形", "rationale": "骰子是正方體，它的面不是長方形。", "isCorrect": false },
+                        { "text": "三角形", "rationale": "骰子沒有三角形的面。", "isCorrect": false },
+                        { "text": "正方形", "rationale": "正方體的每一個面都是一樣大的正方形，所以描下來的圖形是正方形。", "isCorrect": true },
+                        { "text": "圓形", "rationale": "骰子的面是方方的，不是圓的。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "用手摸摸看「正方體」和「長方體」的表面，它們是由什麼樣的面組成的？",
+                    "answerOptions": [
+                        { "text": "只有平平的面", "rationale": "正方體和長方體所有的面都是平平的方塊面，沒有任何彎曲的面。", "isCorrect": true },
+                        { "text": "只有彎曲的面", "rationale": "球體才只有彎曲的面。", "isCorrect": false },
+                        { "text": "有平平的面，也有彎曲的面", "rationale": "那是圓柱的特徵，不是正方體或長方體。", "isCorrect": false },
+                        { "text": "沒有任何面", "rationale": "立體形體一定都有表面可以觸摸。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "延伸題：關於「球」（例如皮球、籃球）的表面，下面哪一個說法是正確的？",
+                    "answerOptions": [
+                        { "text": "它只有平平的面", "rationale": "球摸起來圓圓的，沒有平平的面。", "isCorrect": false },
+                        { "text": "它只有彎曲的面，沒有平平的面", "rationale": "球的表面全部都是彎曲的面，所以不管怎麼推都可以滾動。", "isCorrect": true },
+                        { "text": "它有 2 個平平的面", "rationale": "那是圓柱，不是球。", "isCorrect": false },
+                        { "text": "它有 6 個平平的面", "rationale": "那是正方體或長方體。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "延伸題：觀察一個「圓柱」（像茶葉罐或八寶粥罐頭），它的表面有什麼特色？",
+                    "answerOptions": [
+                        { "text": "只有平平的面", "rationale": "它中間那一圈是彎曲的，可以滾動。", "isCorrect": false },
+                        { "text": "只有彎曲的面", "rationale": "它上下兩個底面是可以平穩站立的平面。", "isCorrect": false },
+                        { "text": "有平平的面，也有彎曲的面", "rationale": "圓柱的上下兩頭是平平的面（圓形），中間圍繞著一圈彎曲的面，所以兩種面都有。", "isCorrect": true },
+                        { "text": "它完全沒有面", "rationale": "圓柱是由平面和曲面組成的立體形體。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "把一個「長方體」的積木放在溜滑梯上往下推，它會怎麼移動？",
+                    "answerOptions": [
+                        { "text": "只會平平地「滑動」，不會「滾動」", "rationale": "長方體只有平平的面，沒有彎曲的面，所以放在斜坡上只能滑下來，沒辦法滾動。", "isCorrect": true },
+                        { "text": "會像皮球一樣一直滾動", "rationale": "長方體沒有彎曲的面，所以不會滾動。", "isCorrect": false },
+                        { "text": "會一邊滑動一邊滾動", "rationale": "它不具備滾動的條件。", "isCorrect": false },
+                        { "text": "會飛起來", "rationale": "受到重力影響，積木只會沿著滑梯表面滑行。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "正方體一共有幾個「面」？這些面長得怎麼樣？",
+                    "answerOptions": [
+                        { "text": "4 個面，都是三角形", "rationale": "正方體有 6 個面，且都是正方形。", "isCorrect": false },
+                        { "text": "6 個面，而且每個面都是一樣大的正方形", "rationale": "正方體由 6 個完全相同的正方形面所組成。", "isCorrect": true },
+                        { "text": "6 個面，每個面都是長方形", "rationale": "那是長方體，不是正方體。", "isCorrect": false },
+                        { "text": "12 個面，都是正方形", "rationale": "12 是正方體的「邊」的數量，面只有 6 個。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "關於「長方體」的面，下面哪一個敘述是正確的？",
+                    "answerOptions": [
+                        { "text": "它一共有 6 個面，有些面是長方形", "rationale": "長方體有 6 個面，它的面可能是 6 個都是長方形，或是有 4 個長方形和 2 個正方形。", "isCorrect": true },
+                        { "text": "它的 6 個面一定全部都一模一樣大", "rationale": "正方體的面才全部一樣大，長方體的面有大有小。", "isCorrect": false },
+                        { "text": "它只有 4 個面", "rationale": "長方體和正方體一樣，都是 6 個面。", "isCorrect": false },
+                        { "text": "它的面全部都是圓形", "rationale": "長方體是由平平的四邊形組成的，沒有圓形的面。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "數一數，不管是正方體還是長方體，它們一共有幾個尖尖的「頂點」？",
+                    "answerOptions": [
+                        { "text": "4 個", "rationale": "這只有上面一格的頂點數量。", "isCorrect": false },
+                        { "text": "6 個", "rationale": "6 是面的數量，不是頂點的數量。", "isCorrect": false },
+                        { "text": "8 個", "rationale": "正方體和長方體都有 8 個頂點（上面 4 個，下面 4 個）。", "isCorrect": true },
+                        { "text": "12 個", "rationale": "12 是邊的數量，不是頂點的數量。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "數一數，正方體和長方體一共有幾條直直的「邊」？",
+                    "answerOptions": [
+                        { "text": "6 條", "rationale": "6 是面的數量。", "isCorrect": false },
+                        { "text": "8 條", "rationale": "8 是頂點的數量。", "isCorrect": false },
+                        { "text": "12 條", "rationale": "正方體和長方體都有 12 條直直的邊（上面 4 條，下面 4 條，中間直直的 4 條）。", "isCorrect": true },
+                        { "text": "4 條", "rationale": "這只是其中一個面的邊數。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "正方體和長方體都有 12 條邊，請問「正方體」的 12 條邊有什麼特別的地方？",
+                    "answerOptions": [
+                        { "text": "12 條邊都一樣長", "rationale": "正方體最大的特色就是 12 條邊的長度全部都完全一樣長。", "isCorrect": true },
+                        { "text": "12 條邊都一樣短，但長度不相同", "rationale": "既然長度不相同就不能說一樣。", "isCorrect": false },
+                        { "text": "有 4 條特別長，其他都很短", "rationale": "這是某些長方體的特徵，正方體每條邊都等長。", "isCorrect": false },
+                        { "text": "正方體的邊是彎曲的", "rationale": "正方體的邊都是直直的。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "媽媽在超市買了一盒裝衛生紙的「面紙盒」，這個面紙盒通常是什麼立體形體？",
+                    "answerOptions": [
+                        { "text": "正方體", "rationale": "一般的面紙盒是長長的，不是每邊都一樣長，所以不是正方體。", "isCorrect": false },
+                        { "text": "長方體", "rationale": "面紙盒有 6 個面、長長方方的，屬於長方體。", "isCorrect": true },
+                        { "text": "球體", "rationale": "球體是圓的，沒辦法穩穩放在桌上抽衛生紙。", "isCorrect": false },
+                        { "text": "圓柱", "rationale": "一般的面紙盒是方盒，不是筒狀的圓柱。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "延伸題：「這是一個立體形體，它完全沒有平平的面，也沒有尖尖的角，往桌上一推，它不管朝哪一個方向都可以自由滾動。」這是什麼形體？",
+                    "answerOptions": [
+                        { "text": "長方體", "rationale": "長方體都是平面，不能滾動。", "isCorrect": false },
+                        { "text": "正方體", "rationale": "正方體都是平面，不能滾動。", "isCorrect": false },
+                        { "text": "圓柱", "rationale": "圓柱有平平的面，且只能朝固定方向滾動，不能往所有方向自由滾動。", "isCorrect": false },
+                        { "text": "球", "rationale": "球只有彎曲的面，沒有頂點與平面，所以可以朝任何方向自由滾動。", "isCorrect": true }
+                    ]
+                },
+                {
+                    "question": "延伸題：數數看，一個「圓柱」一共有幾個平平的面？這些平面是什麼形狀？",
+                    "answerOptions": [
+                        { "text": "2 個平平的面，都是圓形", "rationale": "圓柱的上面和下面各有一個平平的面，這兩個面都是一模一樣大的圓形。", "isCorrect": true },
+                        { "text": "1 個平平的面，是正方形", "rationale": "圓柱沒有正方形的面，且平面有 2 個。", "isCorrect": false },
+                        { "text": "沒有平平的面", "rationale": "圓柱有 2 個平面，球才沒有平面。", "isCorrect": false },
+                        { "text": "6 個平平的面，都是長方形", "rationale": "那是長方體。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "如果想要用積木疊一座很高、很穩固的城堡，拿下面哪一種形體當作最下面的底座最「不適合」，城堡最容易滾走倒塌？",
+                    "answerOptions": [
+                        { "text": "長方體", "rationale": "長方體有大大的平面，很穩固，適合當底座。", "isCorrect": false },
+                        { "text": "正方體", "rationale": "正方體也有平平的面，非常適合堆疊。", "isCorrect": false },
+                        { "text": "球", "rationale": "球只有彎曲的面，放在桌上會滾來滾去，根本沒辦法在它上面疊其他積木，最不適合當底座。", "isCorrect": true },
+                        { "text": "直立放著的圓柱", "rationale": "圓柱直直放時，上面是平的面，也可以在上面疊積木。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "延伸題：美美拿一個「圓柱」形狀的茶葉罐沾上印泥，用它「平平的面」在白紙上蓋一個印章，印出來的平面圖形會是什麼形狀？",
+                    "answerOptions": [
+                        { "text": "正方形", "rationale": "圓柱沒有正方形的面。", "isCorrect": false },
+                        { "text": "長方形", "rationale": "雖然圓柱側面圍繞起來看像長方形，但題目問的是「平平的面」蓋出來的形狀。", "isCorrect": false },
+                        { "text": "三角形", "rationale": "圓柱沒有三角形的面。", "isCorrect": false },
+                        { "text": "圓形", "rationale": "圓柱兩端平平的面是圓形的，所以蓋出來的印子一定是圓形。", "isCorrect": true }
+                    ]
+                }
+            ]
+        },
+        "unit5": {
+            "title": "二下 第五單元：乘法",
+            "questions": [
+                 {
+                    "question": "把「5 ＋ 5 ＋ 5 ＋ 5」寫成乘法算式，應該是哪一個？",
+                    "answerOptions": [
+                        { "text": "5 × 5", "rationale": "這裡只有 4 個 5 相加，所以不是乘 5。", "isCorrect": false },
+                        { "text": "5 × 4", "rationale": "有 4 個 5 連續相加，在乘法中記作 5 × 4。", "isCorrect": true },
+                        { "text": "4 × 5", "rationale": "雖然答案一樣，但意義是「5 個 4 相加」，跟題目的意思不同喔。", "isCorrect": false },
+                        { "text": "4 ＋ 5", "rationale": "這是加法，而且數字也不對。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "在算式「6 × 3 ＝ 18」中，前面的數字「6」叫做什麼？",
+                    "answerOptions": [
+                        { "text": "乘數", "rationale": "乘數是寫在乘號「×」後面的數字（3）。", "isCorrect": false },
+                        { "text": "積", "rationale": "積是乘法算出來的結果（18）。", "isCorrect": false },
+                        { "text": "被乘數", "rationale": "寫在乘號前面的數字叫做「被乘數」，代表每一次要加的數量。", "isCorrect": true },
+                        { "text": "和", "rationale": "和是加法的答案。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "一盒章魚燒有 6 顆，爸爸買了 3 盒，共有幾顆章魚燒？",
+                    "answerOptions": [
+                        { "text": "9 顆", "rationale": "這是把 6 和 3 加起來的結果。", "isCorrect": false },
+                        { "text": "18 顆", "rationale": "一盒 6 顆，有 3 盒就是 6 的 3 倍，6 × 3 = 18 顆。", "isCorrect": true },
+                        { "text": "12 顆", "rationale": "這是買 2 盒的數量。", "isCorrect": false },
+                        { "text": "24 顆", "rationale": "這是買 4 盒的數量。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "「7 的 8 倍」寫成乘法算式應該是多少？",
+                    "answerOptions": [
+                        { "text": "8 × 7", "rationale": "這表示「8 的 7 倍」。雖然答案相同，但列式意義不同。", "isCorrect": false },
+                        { "text": "7 ＋ 8", "rationale": "「倍」要用乘法，不是加法。", "isCorrect": false },
+                        { "text": "7 × 8", "rationale": "7 的 8 倍就是把 7 當作被乘數，乘上 8，列式為 7 × 8。", "isCorrect": true },
+                        { "text": "78", "rationale": "這只是把兩個數字湊在一起。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "算算看，9 × 7 ＝ (　)？",
+                    "answerOptions": [
+                        { "text": "54", "rationale": "這是 9 × 6 的答案。", "isCorrect": false },
+                        { "text": "63", "rationale": "九七六十三，9 × 7 = 63。", "isCorrect": true },
+                        { "text": "72", "rationale": "這是 9 × 8 的答案。", "isCorrect": false },
+                        { "text": "56", "rationale": "這是 8 × 7 的答案。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "算式「8 × 2」的意思，和下面哪一個算式的答案一模一樣？",
+                    "answerOptions": [
+                        { "text": "8 ＋ 2", "rationale": "8 加 2 等於 10。", "isCorrect": false },
+                        { "text": "8 ＋ 8", "rationale": "8 × 2 的意思是 2 個 8 相加，也就是 8 ＋ 8 ＝ 16。", "isCorrect": true },
+                        { "text": "2 ＋ 2", "rationale": "這是 2 × 2。", "isCorrect": false },
+                        { "text": "8 － 2", "rationale": "8 減 2 等於 6。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "一隻青蛙有 4 條腿，5 隻青蛙一共有幾條腿？",
+                    "answerOptions": [
+                        { "text": "9 條腿", "rationale": "這是把 4 和 5 相加。", "isCorrect": false },
+                        { "text": "16 條腿", "rationale": "這是 4 隻青蛙的腿數。", "isCorrect": false },
+                        { "text": "20 條腿", "rationale": "一隻有 4 條腿，5 隻就是 4 × 5 = 20 條腿。", "isCorrect": true },
+                        { "text": "24 條腿", "rationale": "這是 6 隻青蛙的腿數。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "算式：3 × (　) ＝ 21，括號裡面要填入什麼數字？",
+                    "answerOptions": [
+                        { "text": "6", "rationale": "3 × 6 = 18。", "isCorrect": false },
+                        { "text": "7", "rationale": "三七二十一，所以要填 7。", "isCorrect": true },
+                        { "text": "8", "rationale": "3 × 8 = 24。", "isCorrect": false },
+                        { "text": "9", "rationale": "3 × 9 = 27。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "一枝鉛筆賣 8 元，小華買了 4 枝，要付多少元？",
+                    "answerOptions": [
+                        { "text": "12 元", "rationale": "這是用加法算的。", "isCorrect": false },
+                        { "text": "24 元", "rationale": "這是買 3 枝的價錢。", "isCorrect": false },
+                        { "text": "32 元", "rationale": "一枝 8 元，買 4 枝就是 8 的 4 倍，8 × 4 = 32 元。", "isCorrect": true },
+                        { "text": "40 元", "rationale": "這是買 5 枝的價錢。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "「6 × 7」的答案，和下面哪一個乘法算式的答案一樣？",
+                    "answerOptions": [
+                        { "text": "6 × 8", "rationale": "答案是 48，不一樣。", "isCorrect": false },
+                        { "text": "7 × 5", "rationale": "答案是 35，不一樣。", "isCorrect": false },
+                        { "text": "7 × 6", "rationale": "在乘法中，被乘數和乘數交換位置（6×7 和 7×6），答案都是 42，這叫乘法交換律。", "isCorrect": true },
+                        { "text": "6 ＋ 7", "rationale": "這是加法，答案是 13。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "算式「5 × 6 ＝ 30」表示什麼意思？",
+                    "answerOptions": [
+                        { "text": "5 個 6 相加", "rationale": "這是 6 × 5 的意思喔（被乘數是 6）。", "isCorrect": false },
+                        { "text": "6 個 5 相加", "rationale": "被乘數是 5，乘數是 6，代表有 6 個 5 疊加在一起。", "isCorrect": true },
+                        { "text": "5 加 6 等於 30", "rationale": "5 加 6 是 11。", "isCorrect": false },
+                        { "text": "6 減 5 等於 30", "rationale": "減法算不出 30。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "一輛三輪車有 3 個輪子，8 輛三輪車共有幾個輪子？",
+                    "answerOptions": [
+                        { "text": "11 個", "rationale": "這是用加法 3+8。", "isCorrect": false },
+                        { "text": "24 個", "rationale": "一輛 3 個輪子，8 輛就是 3 的 8 倍，3 × 8 = 24。", "isCorrect": true },
+                        { "text": "27 個", "rationale": "這是 9 輛三輪車的輪子。", "isCorrect": false },
+                        { "text": "32 個", "rationale": "這是用 4 × 8 算出來的。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "下面哪一個乘法算式算出來的積（答案）是「36」？",
+                    "answerOptions": [
+                        { "text": "4 × 8", "rationale": "4 × 8 = 32。", "isCorrect": false },
+                        { "text": "5 × 7", "rationale": "5 × 7 = 35。", "isCorrect": false },
+                        { "text": "6 × 6", "rationale": "六六三十六，6 × 6 = 36。", "isCorrect": true },
+                        { "text": "9 × 3", "rationale": "9 × 3 = 27。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "1 包糖果有 7 顆，皮皮買了 5 包，共有幾顆糖果？算式應該怎麼記？",
+                    "answerOptions": [
+                        { "text": "5 × 7 ＝ 35", "rationale": "這樣寫代表「1 包 5 顆，買了 7 包」，雖然答案也是 35，但意思不對。", "isCorrect": false },
+                        { "text": "7 × 5 ＝ 35", "rationale": "被乘數是要被放大的那個量（每包有 7 顆），乘數是倍數（5 包），所以是 7 × 5 = 35。", "isCorrect": true },
+                        { "text": "7 ＋ 5 ＝ 12", "rationale": "這是加法，不是乘法。", "isCorrect": false },
+                        { "text": "7 × 6 ＝ 42", "rationale": "計算倍數錯誤。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "「2 的 3 倍」是 6，「2 的 4 倍」是 8。請問「2 的 5 倍」會比「2 的 4 倍」多多少？",
+                    "answerOptions": [
+                        { "text": "多 1", "rationale": "乘數多 1，但積不是多 1。", "isCorrect": false },
+                        { "text": "多 2", "rationale": "2 的乘法中，每多 1 倍，答案就會多 2（因為是加 1 個 2）。", "isCorrect": true },
+                        { "text": "多 4", "rationale": "這多太多了。", "isCorrect": false },
+                        { "text": "多 5", "rationale": "不是多 5 喔。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "一個星期有 7 天，4 個星期共有幾天？",
+                    "answerOptions": [
+                        { "text": "28 天", "rationale": "一個星期 7 天，4 個星期就是 7 × 4 = 28 天。", "isCorrect": true },
+                        { "text": "21 天", "rationale": "這是 3 個星期的天數。", "isCorrect": false },
+                        { "text": "35 天", "rationale": "這是 5 個星期的天數。", "isCorrect": false },
+                        { "text": "11 天", "rationale": "這是用加法 7+4。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "九九乘法表中，「5的乘法」算出來的答案（積）有一個很明顯的特徵，答案的個位數一定會是什麼數字？",
+                    "answerOptions": [
+                        { "text": "只有 5", "rationale": "5×2=10，個位是0。", "isCorrect": false },
+                        { "text": "只有 0", "rationale": "5×1=5，個位是5。", "isCorrect": false },
+                        { "text": "一定是 0 或是 5", "rationale": "5的乘法答案是 5、10、15、20...，個位數永遠是 5 或 0 在交替。", "isCorrect": true },
+                        { "text": "沒有規律", "rationale": "5的乘法規律非常明顯。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "小狗有 4 隻腳，蜘蛛有 8 隻腳。請問「2 隻蜘蛛」的腳加起來，和幾隻小狗的腳一樣多？",
+                    "answerOptions": [
+                        { "text": "2 隻小狗", "rationale": "2隻小狗只有 8 隻腳。", "isCorrect": false },
+                        { "text": "4 隻小狗", "rationale": "2隻蜘蛛有 8×2=16隻腳。一隻小狗4隻腳，4×4=16，所以和4隻小狗一樣多。", "isCorrect": true },
+                        { "text": "6 隻小狗", "rationale": "6隻小狗有 24 隻腳。", "isCorrect": false },
+                        { "text": "8 隻小狗", "rationale": "8隻小狗有 32 隻腳。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "多多每天存 9 元，存了一個星期後，他總共存了多少元？",
+                    "answerOptions": [
+                        { "text": "9 元", "rationale": "這是只有一天的錢。", "isCorrect": false },
+                        { "text": "45 元", "rationale": "這是存了 5 天的錢。", "isCorrect": false },
+                        { "text": "63 元", "rationale": "一個星期有 7 天，每天存 9 元就是 9 × 7 = 63 元。", "isCorrect": true },
+                        { "text": "72 元", "rationale": "這是存了 8 天的錢。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "學校的操場旁邊種了 8 排樹，每一排都剛好種了 8 棵。總共種了幾棵樹？",
+                    "answerOptions": [
+                        { "text": "16 棵", "rationale": "這是把 8 和 8 加起來了。", "isCorrect": false },
+                        { "text": "56 棵", "rationale": "這是 7 排或每排 7 棵的數量。", "isCorrect": false },
+                        { "text": "64 棵", "rationale": "一排 8 棵，有 8 排，所以是 8 × 8 = 64 棵。", "isCorrect": true },
+                        { "text": "72 棵", "rationale": "這是 9 排的數量。", "isCorrect": false }
+                    ]
+                }
+            ]
+        },
+        "unit6": {
+            "title": "二下 第六單元：公尺與公分",
+            "questions": [
+                 {
+                    "question": "長度單位換算最基本的規則是什麼？",
+                    "answerOptions": [
+                        { "text": "1公尺 ＝ 10公分", "rationale": "10公分大約只有手掌寬，不可能等於1公尺。", "isCorrect": false },
+                        { "text": "1公尺 ＝ 100公分", "rationale": "這是一定要背起來的數學規則，1公尺(m)等於100公分(cm)。", "isCorrect": true },
+                        { "text": "1公分 ＝ 100公尺", "rationale": "這是把公分和公尺的大小關係弄反了。", "isCorrect": false },
+                        { "text": "1公尺 ＝ 1000公分", "rationale": "1000公分是10公尺。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "數學課本上常常用英文字母來代表單位，請問「公尺」記作什麼？",
+                    "answerOptions": [
+                        { "text": "cm", "rationale": "cm 是公分 (centimeter)。", "isCorrect": false },
+                        { "text": "m", "rationale": "公尺的英文是 meter，數學上簡記為 m。", "isCorrect": true },
+                        { "text": "kg", "rationale": "kg 是公斤，量重量的。", "isCorrect": false },
+                        { "text": "ml", "rationale": "ml 是毫升，量容量的。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "數學課本上，用來代表「公分」的英文字母是什麼？",
+                    "answerOptions": [
+                        { "text": "m", "rationale": "m 是公尺。", "isCorrect": false },
+                        { "text": "mm", "rationale": "mm 是毫米，比公分還小。", "isCorrect": false },
+                        { "text": "cm", "rationale": "公分的英文是 centimeter，簡記為 cm。", "isCorrect": true },
+                        { "text": "km", "rationale": "km 是公里，量很長很長的距離用的。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "如果要測量「一枝鉛筆」的長度，用哪一種單位比較適合？",
+                    "answerOptions": [
+                        { "text": "公尺", "rationale": "公尺太長了，量鉛筆不方便。", "isCorrect": false },
+                        { "text": "公分", "rationale": "鉛筆大約十幾公分長，用公分量最剛好。", "isCorrect": true },
+                        { "text": "公斤", "rationale": "公斤是用來量重量的。", "isCorrect": false },
+                        { "text": "無法測量", "rationale": "用直尺就可以量了。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "如果要測量「學校操場跑道」一圈的長度，用哪一種單位來記錄比較適合？",
+                    "answerOptions": [
+                        { "text": "公分", "rationale": "跑道很長，用公分記錄數字會太大。", "isCorrect": false },
+                        { "text": "公尺", "rationale": "測量比較長的距離或比較高的建築物時，用公尺最適合。操場跑道通常是 200 公尺。", "isCorrect": true },
+                        { "text": "公克", "rationale": "公克是重量單位。", "isCorrect": false },
+                        { "text": "不一定", "rationale": "在數學和生活中，測量跑道一定會選擇公尺。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "小明說：「3 公尺就是 300 公分。」他說得對嗎？",
+                    "answerOptions": [
+                        { "text": "對，因為 1公尺=100公分，所以 3公尺就是 300公分", "rationale": "1m = 100cm，3m 就是 3 個 100cm，等於 300cm。", "isCorrect": true },
+                        { "text": "不對，3 公尺應該是 30 公分", "rationale": "換算規則是乘 100，不是乘 10。", "isCorrect": false },
+                        { "text": "不對，3 公尺比 300 公分短", "rationale": "兩個長度是一樣長的。", "isCorrect": false },
+                        { "text": "對，只要把數字加 0 就好", "rationale": "不只是加 0，是要加兩個 0 (乘100)。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "500 公分，也可以說是多少？",
+                    "answerOptions": [
+                        { "text": "50 公尺", "rationale": "50公尺是 5000公分。", "isCorrect": false },
+                        { "text": "5 公尺", "rationale": "因為 100公分=1公尺，500公分有 5 個 100，就是 5 公尺。", "isCorrect": true },
+                        { "text": "500 公尺", "rationale": "單位不同，不能直接把數字照抄。", "isCorrect": false },
+                        { "text": "5000 公尺", "rationale": "這錯得太離譜了。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "長度換算：1 公尺 25 公分，合起來一共是幾公分？",
+                    "answerOptions": [
+                        { "text": "125 公分", "rationale": "1公尺等於100公分，再加上25公分，100 + 25 = 125 公分。", "isCorrect": true },
+                        { "text": "1250 公分", "rationale": "這是計算錯誤。", "isCorrect": false },
+                        { "text": "26 公分", "rationale": "這是把 1 和 25 直接加起來，忘記換算單位了。", "isCorrect": false },
+                        { "text": "100 公分", "rationale": "這是 1公尺，漏掉了後面的 25公分。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "長度換算：408 公分，可以換成幾公尺幾公分？",
+                    "answerOptions": [
+                        { "text": "4 公尺 80 公分", "rationale": "4公尺80公分是 480公分。", "isCorrect": false },
+                        { "text": "4 公尺 8 公分", "rationale": "400公分是 4公尺，剩下 8公分，所以是 4公尺 8公分。", "isCorrect": true },
+                        { "text": "40 公尺 8 公分", "rationale": "40公尺是 4000公分。", "isCorrect": false },
+                        { "text": "408 公尺", "rationale": "公分不能直接變公尺。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "比較長度：2 公尺和 180 公分，哪一個比較長？",
+                    "answerOptions": [
+                        { "text": "180 公分", "rationale": "因為 180 的數字看起來比較大，小朋友常選錯。其實 2 公尺等於 200 公分，200 > 180。", "isCorrect": false },
+                        { "text": "一樣長", "rationale": "兩個長度不相等。", "isCorrect": false },
+                        { "text": "2 公尺", "rationale": "比大小之前要先換成一樣的單位。2公尺 = 200公分，200公分大於180公分，所以 2公尺比較長。", "isCorrect": true },
+                        { "text": "無法比較", "rationale": "換成同單位就可以比較。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "甲彩帶長 3 公尺，乙彩帶長 300 公分，哪一條彩帶比較長？",
+                    "answerOptions": [
+                        { "text": "甲彩帶", "rationale": "3公尺就是300公分。", "isCorrect": false },
+                        { "text": "乙彩帶", "rationale": "300公分就是3公尺。", "isCorrect": false },
+                        { "text": "兩條彩帶一樣長", "rationale": "3公尺 ＝ 300公分，所以兩條一樣長。", "isCorrect": true },
+                        { "text": "沒辦法比較", "rationale": "單位換算後發現數值相等。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "爸爸的身高大約是 175 (　)。括號裡應該填什麼單位比較合理？",
+                    "answerOptions": [
+                        { "text": "公尺", "rationale": "175公尺比大樓還要高！", "isCorrect": false },
+                        { "text": "公分", "rationale": "成人的身高大約一百多公分，填 175 公分（大約 1.75公尺）是合理的。", "isCorrect": true },
+                        { "text": "元", "rationale": "元是錢的單位。", "isCorrect": false },
+                        { "text": "個", "rationale": "個是數量的單位。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "小華上課用的課桌，高度大約是多少比較合理？",
+                    "answerOptions": [
+                        { "text": "7 公分", "rationale": "7公分大約只有橡皮擦那麼長，太矮了。", "isCorrect": false },
+                        { "text": "7 公尺", "rationale": "7公尺大概有兩層樓那麼高，太高了。", "isCorrect": false },
+                        { "text": "70 公分", "rationale": "70公分大約是小朋友腰部以下的高度，符合課桌的高度。", "isCorrect": true },
+                        { "text": "700 公分", "rationale": "700公分就是 7公尺，太高了。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "黑板長 4 公尺，布告欄長 3 公尺 50 公分。把它們兩個排在一起，一共是多長？",
+                    "answerOptions": [
+                        { "text": "7 公尺 50 公分", "rationale": "一共要用加法。公尺加公尺：4 + 3 = 7。公分照寫：50。合起來是 7 公尺 50 公分。", "isCorrect": true },
+                        { "text": "43 公尺 50 公分", "rationale": "這是把 4 和 3 直接排在一起了。", "isCorrect": false },
+                        { "text": "390 公分", "rationale": "這是用錯誤的方式相加。", "isCorrect": false },
+                        { "text": "1 公尺 50 公分", "rationale": "這是用減法的結果（相差多少）。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "有一條長 1 公尺的童軍繩，剪掉 30 公分後，還剩下幾公分？",
+                    "answerOptions": [
+                        { "text": "29 公分", "rationale": "這是不對的算法。", "isCorrect": false },
+                        { "text": "70 公分", "rationale": "要先換成一樣的單位。1公尺 = 100公分。100 - 30 = 70 公分。", "isCorrect": true },
+                        { "text": "130 公分", "rationale": "剪掉應該變短（用減法），這是用加法算的。", "isCorrect": false },
+                        { "text": "70 公尺", "rationale": "單位弄錯了，剩下的不會變成公尺。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "長度計算：120 公分 ＋ 80 公分 ＝ (　)。括號裡可以填哪一個？",
+                    "answerOptions": [
+                        { "text": "200 公尺", "rationale": "單位錯了，是200公分。", "isCorrect": false },
+                        { "text": "2 公分", "rationale": "這太短了。", "isCorrect": false },
+                        { "text": "2 公尺", "rationale": "120 + 80 = 200 公分。200 公分換算成公尺就是 2 公尺。", "isCorrect": true },
+                        { "text": "40 公分", "rationale": "這是減法的答案。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "體育課測驗立定跳遠。小明跳了 130 公分，小華跳了 1 公尺 20 公分。誰跳得比較遠？",
+                    "answerOptions": [
+                        { "text": "小明", "rationale": "小華的 1公尺20公分 = 120公分。130 > 120，所以小明跳得比較遠。", "isCorrect": true },
+                        { "text": "小華", "rationale": "1公尺20公分換算下來比 130公分短。", "isCorrect": false },
+                        { "text": "一樣遠", "rationale": "130 不等於 120。", "isCorrect": false },
+                        { "text": "沒辦法比較", "rationale": "換成相同的公分就可以比了。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "有一棵樹高 3 公尺 40 公分。颱風過後，樹頂被折斷了 1 公尺。現在這棵樹剩下多高？",
+                    "answerOptions": [
+                        { "text": "4 公尺 40 公分", "rationale": "這是用加法算的，樹斷掉應該變矮。", "isCorrect": false },
+                        { "text": "2 公尺 40 公分", "rationale": "剩下多高用減法。3公尺 - 1公尺 = 2公尺，公分不變，所以剩下 2公尺 40公分。", "isCorrect": true },
+                        { "text": "3 公尺 39 公分", "rationale": "這是減去 1公分，不是 1公尺。", "isCorrect": false },
+                        { "text": "340 公尺", "rationale": "這錯得太離譜了。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "把下面四個長度比一比，哪一個是最「短」的？",
+                    "answerOptions": [
+                        { "text": "1 公尺 5 公分", "rationale": "這等於 105 公分。", "isCorrect": false },
+                        { "text": "95 公分", "rationale": "這等於 95 公分，在四個選項中數字最小，所以最短。", "isCorrect": true },
+                        { "text": "150 公分", "rationale": "這是最長的。", "isCorrect": false },
+                        { "text": "1 公尺", "rationale": "1公尺等於 100公分，比 95公分長。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "弟弟把一條 3 公尺的繩子和一條 2 公尺的繩子接在一起。接好後，這條繩子有多長？",
+                    "answerOptions": [
+                        { "text": "1 公尺", "rationale": "這是減法的答案。", "isCorrect": false },
+                        { "text": "5 公尺", "rationale": "接在一起用加法：3 + 2 = 5 公尺。", "isCorrect": true },
+                        { "text": "50 公分", "rationale": "單位寫錯了，是5公尺（500公分）。", "isCorrect": false },
+                        { "text": "500 公尺", "rationale": "這太長了。", "isCorrect": false }
+                    ]
+                }
+            ]
+        },
+        "unit7": {
+            "title": "二下 第七單元：乘與加減兩步驟",
+            "questions": [
+                 {
+                    "question": "1 包糖果有 5 顆，小明買了 3 包，老師又多給他 2 顆。小明現在共有幾顆糖果？",
+                    "answerOptions": [
+                        { "text": "10 顆", "rationale": "這是把 5 和 3 加起來的錯誤算法（5+3=8，8+2=10）。", "isCorrect": false },
+                        { "text": "17 顆", "rationale": "先算買了幾顆：5 × 3 = 15。再加上老師給的 2 顆：15 + 2 = 17 顆。", "isCorrect": true },
+                        { "text": "13 顆", "rationale": "這是把最後的 2 顆用減法扣掉了（15-2=13）。", "isCorrect": false },
+                        { "text": "25 顆", "rationale": "這是把 5 和最後的 5 (3+2) 相乘了。", "isCorrect": false }
+                    ],
+                    "hint": "要先用「乘法」算出 3 包糖果總共有幾顆，再加上老師給的 2 顆喔！"
+                },
+                {
+                    "question": "1 張貼紙賣 6 元。小紅買了 4 張貼紙，還買了一塊 10 元的橡皮擦，她一共要付多少元？",
+                    "answerOptions": [
+                        { "text": "24 元", "rationale": "這只有算貼紙的錢（6 × 4 = 24），忘記加上橡皮擦的錢了。", "isCorrect": false },
+                        { "text": "34 元", "rationale": "先算貼紙的錢：6 × 4 = 24。再加上橡皮擦的錢：24 + 10 = 34 元。", "isCorrect": true },
+                        { "text": "20 元", "rationale": "這是把所有數字加起來（6+4+10=20），忘記買 4 張要用乘法。", "isCorrect": false },
+                        { "text": "14 元", "rationale": "這是用 24 減 10 的錯誤算法。", "isCorrect": false }
+                    ],
+                    "hint": "先算「6 的 4 倍」是多少錢，再去加上 10 元。"
+                },
+                {
+                    "question": "1 盒布丁有 3 個，媽媽買了 5 盒，冰箱裡原本還有 4 個。現在家裡共有幾個布丁？",
+                    "answerOptions": [
+                        { "text": "15 個", "rationale": "這只有媽媽買的數量（3 × 5 = 15），忘記加冰箱裡的了。", "isCorrect": false },
+                        { "text": "11 個", "rationale": "這是把買來的 15 個減掉 4 個的錯誤結果。", "isCorrect": false },
+                        { "text": "12 個", "rationale": "這是把 3、5、4 直接相加的錯誤算法。", "isCorrect": false },
+                        { "text": "19 個", "rationale": "買來的布丁有 3 × 5 = 15 個。加上原本的 4 個：15 + 4 = 19 個。", "isCorrect": true }
+                    ],
+                    "hint": "兩步驟計算：第一步先算乘法找出買來的數量，第二步再加上原有的數量。"
+                },
+                {
+                    "question": "小花每天存 10 元，存了 1 個星期（7天）後，再加上撲滿裡原本的 20 元，她現在共有多少元？",
+                    "answerOptions": [
+                        { "text": "90 元", "rationale": "每天存 10 元，7 天是 10 × 7 = 70 元。加上原本的 20 元：70 + 20 = 90 元。", "isCorrect": true },
+                        { "text": "70 元", "rationale": "這只有算存了 7 天的錢，漏加了原本的 20 元。", "isCorrect": false },
+                        { "text": "37 元", "rationale": "這是直接用加法（10+7+20）算出來的。", "isCorrect": false },
+                        { "text": "50 元", "rationale": "這是用 70 減去 20 的結果，錢應該是越來越多才對。", "isCorrect": false }
+                    ],
+                    "hint": "1 個星期有 7 天，先算 7 天總共存了多少錢。"
+                },
+                {
+                    "question": "排隊玩溜滑梯，大家排成 4 排，每排剛好有 5 個人，旁邊還有 3 個人坐在椅子上等。請問總共有幾個人？",
+                    "answerOptions": [
+                        { "text": "20 人", "rationale": "這只有算排隊的人數（5 × 4 = 20）。", "isCorrect": false },
+                        { "text": "12 人", "rationale": "這是把所有數字加起來的結果。", "isCorrect": false },
+                        { "text": "23 人", "rationale": "排隊的有 5 × 4 = 20 人。加上旁邊等待的 3 人：20 + 3 = 23 人。", "isCorrect": true },
+                        { "text": "17 人", "rationale": "這是用 20 減 3 的錯誤結果。", "isCorrect": false }
+                    ],
+                    "hint": "想想看，「每排 5 人，有 4 排」要用什麼法來算總人數？"
+                },
+                {
+                    "question": "1 包餅乾有 8 片，哥哥買了 4 包，可是他不小心吃掉了 5 片。哥哥還剩下幾片餅乾？",
+                    "answerOptions": [
+                        { "text": "37 片", "rationale": "這是把吃掉的用加法加上去了（32 + 5 = 37）。", "isCorrect": false },
+                        { "text": "27 片", "rationale": "哥哥買了 8 × 4 = 32 片餅乾。吃掉會變少，所以用減法：32 - 5 = 27 片。", "isCorrect": true },
+                        { "text": "32 片", "rationale": "這只有算買來的數量，沒算吃掉的。", "isCorrect": false },
+                        { "text": "7 片", "rationale": "這是把 8+4 再減 5 的錯誤算法。", "isCorrect": false }
+                    ],
+                    "hint": "吃掉代表會變少，第二步要用加法還是減法呢？"
+                },
+                {
+                    "question": "1 盒鉛筆有 6 枝。老師買了 5 盒，送給表現好的小朋友 12 枝後，老師還剩下幾枝鉛筆？",
+                    "answerOptions": [
+                        { "text": "30 枝", "rationale": "這是老師原本買來的總數量（6 × 5 = 30）。", "isCorrect": false },
+                        { "text": "42 枝", "rationale": "這是用加法加了 12 枝，送人應該會變少。", "isCorrect": false },
+                        { "text": "18 枝", "rationale": "老師買了 6 × 5 = 30 枝。送給小朋友 12 枝，剩下 30 - 12 = 18 枝。", "isCorrect": true },
+                        { "text": "1 枝", "rationale": "這是不正確的計算結果。", "isCorrect": false }
+                    ],
+                    "hint": "第一步先算乘法求出總共買了幾枝，第二步用減法扣掉送人的數量。"
+                },
+                {
+                    "question": "果園裡種了蘋果樹，每排種 7 棵，種了 6 排。後來因為颱風吹倒了 4 棵蘋果樹，現在還剩下幾棵？",
+                    "answerOptions": [
+                        { "text": "46 棵", "rationale": "這是把吹倒的 4 棵用加法加上去了。", "isCorrect": false },
+                        { "text": "42 棵", "rationale": "這是原本總共的棵數（7 × 6 = 42）。", "isCorrect": false },
+                        { "text": "9 棵", "rationale": "這是把 7+6 再減 4 的結果。", "isCorrect": false },
+                        { "text": "38 棵", "rationale": "原本有 7 × 6 = 42 棵。被吹倒 4 棵會變少：42 - 4 = 38 棵。", "isCorrect": true }
+                    ],
+                    "hint": "種了「6 排，每排 7 棵」，也就是 7 的 6 倍喔。"
+                },
+                {
+                    "question": "小華有 50 元，他買了 1 杯 8 元的紅茶，總共買了 3 杯。請問小華還剩下幾元？",
+                    "answerOptions": [
+                        { "text": "26 元", "rationale": "買飲料花了 8 × 3 = 24 元。小華原本有 50 元，找回 50 - 24 = 26 元。", "isCorrect": true },
+                        { "text": "42 元", "rationale": "這只有減去 1 杯的價錢（50 - 8 = 42）。", "isCorrect": false },
+                        { "text": "24 元", "rationale": "這是買 3 杯紅茶要付的錢，不是剩下的錢。", "isCorrect": false },
+                        { "text": "74 元", "rationale": "花了錢應該變少，這是用加法算出來的錯誤答案。", "isCorrect": false }
+                    ],
+                    "hint": "「找錢」的題目，要用你帶去的總錢數，去減掉買東西花掉的錢。"
+                },
+                {
+                    "question": "1 塊蛋糕賣 9 元，小明買了 4 塊，他拿一個 50 元硬幣給老闆，老闆要找給他多少元？",
+                    "answerOptions": [
+                        { "text": "36 元", "rationale": "36 元是買蛋糕要付的錢（9 × 4），不是找回來的錢。", "isCorrect": false },
+                        { "text": "14 元", "rationale": "買蛋糕花了 9 × 4 = 36 元。付了 50 元，找回 50 - 36 = 14 元。", "isCorrect": true },
+                        { "text": "86 元", "rationale": "找錢要用減法，這是誤用加法（50 + 36 = 86）。", "isCorrect": false },
+                        { "text": "41 元", "rationale": "這只有買 1 塊蛋糕，用 50 - 9 算出來的。", "isCorrect": false }
+                    ],
+                    "hint": "先算算看小明買蛋糕總共要付多少錢？老闆找錢要用加法還是減法呢？"
+                },
+                {
+                    "question": "1 本筆記本賣 10 元。皮皮買了 6 本，他拿出一張 100 元鈔票付錢，會找回多少元？",
+                    "answerOptions": [
+                        { "text": "40 元", "rationale": "筆記本花了 10 × 6 = 60 元。付了 100 元，找回 100 - 60 = 40 元。", "isCorrect": true },
+                        { "text": "60 元", "rationale": "60 元是買筆記本花掉的錢。", "isCorrect": false },
+                        { "text": "160 元", "rationale": "找錢要用減法，這裡是誤用加法加起來了。", "isCorrect": false },
+                        { "text": "90 元", "rationale": "這只減去了買 1 本的錢（100 - 10 = 90）。", "isCorrect": false }
+                    ],
+                    "hint": "買東西花了 60 元，你給老闆 100 元，老闆要退給你多少錢？"
+                },
+                {
+                    "question": "1 顆氣球賣 7 元，爸爸買了 8 顆，他付給店員一張 100 元，店員要找給爸爸多少元？",
+                    "answerOptions": [
+                        { "text": "44 元", "rationale": "氣球花了 7 × 8 = 56 元。付了 100 元，找回 100 - 56 = 44 元。", "isCorrect": true },
+                        { "text": "56 元", "rationale": "這是買氣球花掉的錢。", "isCorrect": false },
+                        { "text": "93 元", "rationale": "這只有減去 1 顆氣球的錢。", "isCorrect": false },
+                        { "text": "34 元", "rationale": "這是 100 減去錯誤的乘法結果算出來的。", "isCorrect": false }
+                    ],
+                    "hint": "先背出九九乘法：七八是多少？再用 100 去減。"
+                },
+                {
+                    "question": "1 枝自動鉛筆賣 7 元。哥哥想買 9 枝，但他身上只有 50 元，請問哥哥還「不夠」多少元？",
+                    "answerOptions": [
+                        { "text": "13 元", "rationale": "買筆需要 7 × 9 = 63 元。身上只有 50 元，還差 63 - 50 = 13 元。", "isCorrect": true },
+                        { "text": "63 元", "rationale": "這是買筆總共需要的錢，但他身上已經有 50 元了。", "isCorrect": false },
+                        { "text": "113 元", "rationale": "這是把需要的錢和身上的錢加起來了。", "isCorrect": false },
+                        { "text": "34 元", "rationale": "這是用 50 減去 7 加 9 的錯誤結果。", "isCorrect": false }
+                    ],
+                    "hint": "「不夠多少元」代表買東西需要的錢比身上的錢還要多。把需要的錢減掉身上的錢就是答案。"
+                },
+                {
+                    "question": "弟弟想買 3 個玩具，每個玩具賣 8 元。但他口袋裡只帶了 20 元，請問他不夠幾元？",
+                    "answerOptions": [
+                        { "text": "24 元", "rationale": "這是買 3 個玩具總共需要的錢（8 × 3 = 24）。", "isCorrect": false },
+                        { "text": "4 元", "rationale": "玩具需要 8 × 3 = 24 元。他帶了 20 元，還不夠 24 - 20 = 4 元。", "isCorrect": true },
+                        { "text": "44 元", "rationale": "這是把需要的錢加上身上的錢。", "isCorrect": false },
+                        { "text": "12 元", "rationale": "這是把 20 減去 8 算出來的。", "isCorrect": false }
+                    ],
+                    "hint": "算算看 3 個玩具總共要多少錢？這個錢比 20 元多了多少呢？"
+                },
+                {
+                    "question": "教室裡的課桌椅排成 5 排，每排有 7 張椅子，其中有 2 張椅子壞掉了。請問好的椅子有幾張？",
+                    "answerOptions": [
+                        { "text": "35 張", "rationale": "這是椅子總數（7 × 5 = 35），沒有扣掉壞掉的。", "isCorrect": false },
+                        { "text": "37 張", "rationale": "壞掉的椅子不能用，要用減法扣掉，不能用加法。", "isCorrect": false },
+                        { "text": "33 張", "rationale": "總共有 7 × 5 = 35 張椅子。扣掉壞掉的 2 張：35 - 2 = 33 張好的椅子。", "isCorrect": true },
+                        { "text": "10 張", "rationale": "這是不正確的算法。", "isCorrect": false }
+                    ],
+                    "hint": "好的椅子數量 = 全部的椅子數量 - 壞掉的椅子數量。"
+                },
+                {
+                    "question": "數學遊戲：甲數是「4 的 6 倍」，乙數是 15，請問甲數和乙數合起來是多少？",
+                    "answerOptions": [
+                        { "text": "24", "rationale": "這是算出了甲數（4 × 6 = 24），忘記加上乙數。", "isCorrect": false },
+                        { "text": "39", "rationale": "甲數是 4 × 6 = 24。甲數和乙數合起來：24 + 15 = 39。", "isCorrect": true },
+                        { "text": "9", "rationale": "這是把 24 減去 15 的結果，題目是說「合起來」。", "isCorrect": false },
+                        { "text": "25", "rationale": "這是直接把 4, 6, 15 相加的錯誤結果。", "isCorrect": false }
+                    ],
+                    "hint": "先算乘法解出甲數是多少，再去和乙數相加。"
+                },
+                {
+                    "question": "美美做了「8 的 5 倍」個小星星，她把其中的 20 個送給好朋友，美美還剩下幾個小星星？",
+                    "answerOptions": [
+                        { "text": "40 個", "rationale": "這只是美美一開始做的小星星總數（8 × 5 = 40）。", "isCorrect": false },
+                        { "text": "60 個", "rationale": "送人會變少，要用減法，這裡是誤用了加法。", "isCorrect": false },
+                        { "text": "20 個", "rationale": "小星星總數是 8 × 5 = 40 個。送人 20 個：40 - 20 = 20 個。", "isCorrect": true },
+                        { "text": "13 個", "rationale": "計算錯誤。", "isCorrect": false }
+                    ],
+                    "hint": "「8 的 5 倍」是 40。送給別人要用減法喔！"
+                },
+                {
+                    "question": "操場上有 3 群小朋友在玩，每一群剛好都有 9 個人。後來有 6 個人先回家了，現在操場上還有幾個人？",
+                    "answerOptions": [
+                        { "text": "27 人", "rationale": "這是原本操場上的總人數（9 × 3 = 27）。", "isCorrect": false },
+                        { "text": "33 人", "rationale": "有人回家人數會變少，這是誤用加法算出來的。", "isCorrect": false },
+                        { "text": "21 人", "rationale": "原本有 9 × 3 = 27 人。6 個人回家後剩下：27 - 6 = 21 人。", "isCorrect": true },
+                        { "text": "6 人", "rationale": "這是用 9+3 再減 6 的錯誤算法。", "isCorrect": false }
+                    ],
+                    "hint": "先算乘法求出總人數，再用減法扣掉回家的人。"
+                },
+                {
+                    "question": "一包色紙有 10 張，姊姊買了 8 包。她做勞作用掉了 25 張，還剩下幾張色紙？",
+                    "answerOptions": [
+                        { "text": "80 張", "rationale": "這是姐姐買來的色紙總數（10 × 8 = 80）。", "isCorrect": false },
+                        { "text": "105 張", "rationale": "用掉色紙會變少，這裡是誤用加法。", "isCorrect": false },
+                        { "text": "55 張", "rationale": "總共有 10 × 8 = 80 張色紙。用掉 25 張：80 - 25 = 55 張。", "isCorrect": true },
+                        { "text": "45 張", "rationale": "減法計算錯誤（80-25 算成 45）。", "isCorrect": false }
+                    ],
+                    "hint": "10 的 8 倍是多少呢？再去減掉 25 張喔！"
+                },
+                {
+                    "question": "挑戰題：便利商店舉辦特價活動，原本 1 瓶 9 元的養樂多，現在特價 1 瓶只要 7 元。媽媽一次買了 6 瓶，請問媽媽「省下」了多少元？",
+                    "answerOptions": [
+                        { "text": "42 元", "rationale": "這是媽媽買 6 瓶特價養樂多「花掉」的錢（7 × 6 = 42），不是省下的錢。", "isCorrect": false },
+                        { "text": "54 元", "rationale": "這是如果沒特價，原本需要花的錢（9 × 6 = 54）。", "isCorrect": false },
+                        { "text": "12 元", "rationale": "可以先算原本要 9×6=54 元，現在只要 7×6=42 元，54-42=12 元。或者算 1 瓶省下 9-7=2 元，6 瓶省下 2×6=12 元。", "isCorrect": true },
+                        { "text": "2 元", "rationale": "這只有算買 1 瓶省下來的錢。", "isCorrect": false }
+                    ],
+                    "hint": "你可以先算算看原本要花多少錢？現在花多少錢？把它們相減。或者先算 1 瓶省幾元，再算 6 瓶。"
+                }
+            ]
+        },
+        "unit8": {
+            "title": "二下 第八單元：年、月、日",
+            "questions": [
+                 {
+                    "question": "我們常說的「一年」，總共有幾個月？",
+                    "answerOptions": [
+                        { "text": "10 個月", "rationale": "一年不只 10 個月。", "isCorrect": false },
+                        { "text": "12 個月", "rationale": "一年是從 1 月到 12 月，總共有 12 個月。", "isCorrect": true },
+                        { "text": "7 個月", "rationale": "7 是一星期的天數。", "isCorrect": false },
+                        { "text": "24 個月", "rationale": "這是兩年的月數。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "數學課學到的「大月」，代表這個月有幾天？",
+                    "answerOptions": [
+                        { "text": "28 天", "rationale": "這通常是 2 月的天數。", "isCorrect": false },
+                        { "text": "29 天", "rationale": "這是閏年 2 月的天數。", "isCorrect": false },
+                        { "text": "30 天", "rationale": "30 天叫做「小月」。", "isCorrect": false },
+                        { "text": "31 天", "rationale": "只要那個月有 31 天，我們就稱它為「大月」。", "isCorrect": true }
+                    ]
+                },
+                {
+                    "question": "一年 12 個月當中，哪一個月最特別，它的天數最少？",
+                    "answerOptions": [
+                        { "text": "1 月", "rationale": "1 月是大月，有 31 天。", "isCorrect": false },
+                        { "text": "2 月", "rationale": "2 月最特別，平年只有 28 天，閏年有 29 天，是所有月份中天數最少的。", "isCorrect": true },
+                        { "text": "8 月", "rationale": "8 月是大月，有 31 天。", "isCorrect": false },
+                        { "text": "12 月", "rationale": "12 月是大月，有 31 天。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "老師教我們用「握拳頭」來數大月和小月，凸起來的骨頭代表什麼意思？",
+                    "answerOptions": [
+                        { "text": "大月（31 天）", "rationale": "凸起來的關節代表「大月」，也就是有 31 天的月份。", "isCorrect": true },
+                        { "text": "小月（30 天）", "rationale": "凹下去的地方代表小月。", "isCorrect": false },
+                        { "text": "2 月", "rationale": "2 月在凹下去的地方。", "isCorrect": false },
+                        { "text": "星期日", "rationale": "拳頭是用來數月份的，不是數星期。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "一年當中，有兩個「大月」是連在一起的（也就是放暑假的時候），是哪兩個月？",
+                    "answerOptions": [
+                        { "text": "5月和6月", "rationale": "6月是小月。", "isCorrect": false },
+                        { "text": "7月和8月", "rationale": "7月和8月都是 31 天，是連續的兩個大月。", "isCorrect": true },
+                        { "text": "11月和12月", "rationale": "11月是小月。", "isCorrect": false },
+                        { "text": "1月和2月", "rationale": "2月天數最少。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "如果今年是「平年」，請問今年的 2 月會有幾天？",
+                    "answerOptions": [
+                        { "text": "28 天", "rationale": "平年的 2 月有 28 天；如果是閏年才會有 29 天。", "isCorrect": true },
+                        { "text": "29 天", "rationale": "這是閏年的 2 月。", "isCorrect": false },
+                        { "text": "30 天", "rationale": "2 月不會有 30 天。", "isCorrect": false },
+                        { "text": "31 天", "rationale": "2 月不會有 31 天。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "如果今天是「星期三」，請問「昨天」是星期幾？",
+                    "answerOptions": [
+                        { "text": "星期二", "rationale": "昨天是今天的前一天，星期三的前一天是星期二。", "isCorrect": true },
+                        { "text": "星期四", "rationale": "這是「明天」。", "isCorrect": false },
+                        { "text": "星期一", "rationale": "這是前天。", "isCorrect": false },
+                        { "text": "星期五", "rationale": "這是後天。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "如果今天是「星期五」，請問「明天」是星期幾？",
+                    "answerOptions": [
+                        { "text": "星期四", "rationale": "這是「昨天」。", "isCorrect": false },
+                        { "text": "星期六", "rationale": "明天是今天的後一天，星期五的後一天是星期六。", "isCorrect": true },
+                        { "text": "星期日", "rationale": "這是後天。", "isCorrect": false },
+                        { "text": "星期一", "rationale": "順序不對。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "1 個星期有 7 天。皮皮去阿嬤家住了 2 個星期，他總共住了幾天？",
+                    "answerOptions": [
+                        { "text": "9 天", "rationale": "這是用加法 7+2 算的。", "isCorrect": false },
+                        { "text": "10 天", "rationale": "這不是星期的正確換算。", "isCorrect": false },
+                        { "text": "14 天", "rationale": "1 個星期是 7 天，2 個星期就是 7 的 2 倍：7 × 2 = 14 天。", "isCorrect": true },
+                        { "text": "21 天", "rationale": "這是 3 個星期的天數。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "小紅的生日是 6月30日。過了這天以後的「明天」，會是幾月幾日？",
+                    "answerOptions": [
+                        { "text": "6月31日", "rationale": "6月是小月，只有 30 天，沒有 31 日。", "isCorrect": false },
+                        { "text": "7月1日", "rationale": "因為 6月只有 30 天，所以 6月30日 過完，下個月的第一天就是 7月1日。", "isCorrect": true },
+                        { "text": "6月1日", "rationale": "月份不會倒退回去。", "isCorrect": false },
+                        { "text": "7月31日", "rationale": "這跳得太遠了。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "今天是 12月31日，也就是一年的最後一天。請問「明天」會是幾月幾日？",
+                    "answerOptions": [
+                        { "text": "12月32日", "rationale": "12月最多只有 31 天。", "isCorrect": false },
+                        { "text": "13月1日", "rationale": "一年只有 12 個月，沒有 13 月。", "isCorrect": false },
+                        { "text": "明年的 1月1日", "rationale": "12 月過完，就是新的一年開始，所以隔天是明年的 1月1日（元旦）。", "isCorrect": true },
+                        { "text": "明年的 12月1日", "rationale": "新的一年要從 1 月重新開始。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "看月曆時，通常用「紅色」印出來的數字代表什麼意思？",
+                    "answerOptions": [
+                        { "text": "這天一定會下雨", "rationale": "月曆無法預測天氣。", "isCorrect": false },
+                        { "text": "大月", "rationale": "大月不用紅色表示。", "isCorrect": false },
+                        { "text": "星期日或是國定假日（放假日）", "rationale": "月曆上的紅色數字通常代表星期日、國定假日等大家放假休息的日子。", "isCorrect": true },
+                        { "text": "這天一定要寫數學作業", "rationale": "這不是月曆的通用規則。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "小明參加夏令營，從 8月3日 開始，到 8月5日 結束。他總共參加了幾天？",
+                    "answerOptions": [
+                        { "text": "2 天", "rationale": "這是用 5 - 3 = 2 算的錯誤結果。其實 3日、4日、5日都有參加。", "isCorrect": false },
+                        { "text": "3 天", "rationale": "數數看：8月3日(第1天)、8月4日(第2天)、8月5日(第3天)，總共是 3 天。", "isCorrect": true },
+                        { "text": "4 天", "rationale": "這多算了一天。", "isCorrect": false },
+                        { "text": "5 天", "rationale": "這是結束的日期數字，不是經過的天數。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "爸爸出差，從 11月28日 開始，一直到 12月2日 才回家。請問 11 月他出差了幾天？",
+                    "answerOptions": [
+                        { "text": "2 天", "rationale": "11月是小月(30天)。他出差了 28、29、30 這三天。", "isCorrect": false },
+                        { "text": "3 天", "rationale": "11月有 30 天。28日、29日、30日都在 11 月，所以 11 月出差了 3 天。", "isCorrect": true },
+                        { "text": "4 天", "rationale": "如果把 31 日算進去會變 4 天，但 11 月沒有 31 日。", "isCorrect": false },
+                        { "text": "5 天", "rationale": "這是他全部出差的天數，但題目只問「11 月」出差了幾天。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "如果某個月的 1 日剛好是「星期一」，那麼這個月的 8 日會是星期幾？",
+                    "answerOptions": [
+                        { "text": "星期日", "rationale": "這算錯了一天。", "isCorrect": false },
+                        { "text": "星期一", "rationale": "一個星期有 7 天，1 日加上 7 天就是 8 日，所以 8 日也會是同一個星期幾（星期一）。", "isCorrect": true },
+                        { "text": "星期二", "rationale": "9 日才是星期二。", "isCorrect": false },
+                        { "text": "星期八", "rationale": "星期只有一到日，沒有星期八。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "一包餅乾上的保存期限寫著「1 年」。如果是在今年 1 月買的，代表它可以保存多久？",
+                    "answerOptions": [
+                        { "text": "1 個月", "rationale": "這太短了。", "isCorrect": false },
+                        { "text": "10 個月", "rationale": "一年不是 10 個月。", "isCorrect": false },
+                        { "text": "12 個月", "rationale": "1 年 = 12 個月，所以保存 1 年就是可以保存 12 個月。", "isCorrect": true },
+                        { "text": "365 個月", "rationale": "365 是一年的「天數」，不是「月數」。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "下面哪一個月份是「小月」（有 30 天）？",
+                    "answerOptions": [
+                        { "text": "1月", "rationale": "1月是 31 天。", "isCorrect": false },
+                        { "text": "3月", "rationale": "3月是 31 天。", "isCorrect": false },
+                        { "text": "4月", "rationale": "4月是小月，只有 30 天。", "isCorrect": true },
+                        { "text": "8月", "rationale": "8月是大月，有 31 天。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "一年 12 個月中，大月有幾個月？",
+                    "answerOptions": [
+                        { "text": "5 個月", "rationale": "數量不對。", "isCorrect": false },
+                        { "text": "6 個月", "rationale": "大月和小月不是剛好一半一半。", "isCorrect": false },
+                        { "text": "7 個月", "rationale": "大月有 1, 3, 5, 7, 8, 10, 12 月，數一數總共有 7 個月。", "isCorrect": true },
+                        { "text": "4 個月", "rationale": "4 個月是小月（4, 6, 9, 11）的數量。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "媽媽說：「下個星期的今天，我們就要去露營了！」請問「下個星期的今天」代表經過了幾天？",
+                    "answerOptions": [
+                        { "text": "1 天", "rationale": "這是明天。", "isCorrect": false },
+                        { "text": "7 天", "rationale": "一個星期就是 7 天，下個星期的同一天，代表剛好過了 7 天。", "isCorrect": true },
+                        { "text": "10 天", "rationale": "一個星期不是 10 天。", "isCorrect": false },
+                        { "text": "14 天", "rationale": "這是「下下個星期」的今天。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "看日曆時，如果昨天是 5 月 4 日，那麼明天會是幾月幾日？",
+                    "answerOptions": [
+                        { "text": "5 月 5 日", "rationale": "這是「今天」的日期（昨天+1）。", "isCorrect": false },
+                        { "text": "5 月 6 日", "rationale": "昨天是 4 日，今天是 5 日，明天就是再加 1 天，所以是 5 月 6 日。", "isCorrect": true },
+                        { "text": "5 月 3 日", "rationale": "這是「前天」。", "isCorrect": false },
+                        { "text": "6 月 4 日", "rationale": "月份不會改變。", "isCorrect": false }
+                    ]
+                }
+            ]
+        },
+        "unit9": {
+            "title": "二下 第九單元：分裝與平分",
+            "questions": [
+                 {
+                    "question": "觀念題：數學裡的「平分」是什麼意思？",
+                    "answerOptions": [
+                        { "text": "把東西隨便分給別人", "rationale": "隨便分可能會有人拿多、有人拿少，不公平。", "isCorrect": false },
+                        { "text": "每個人分到的數量都「一樣多」", "rationale": "「平分」就是公平地分配，確保每一份或是每個人拿到的數量都完全相等。", "isCorrect": true },
+                        { "text": "把東西全部分給同一個人", "rationale": "這沒有分給多個人，不算平分。", "isCorrect": false },
+                        { "text": "年紀小的人可以分比較多", "rationale": "平分不看年紀，只看每份數量是否相等。", "isCorrect": false }
+                    ],
+                    "hint": "想想看，「平」這個字是不是有公平、一樣的意思呢？"
+                },
+                {
+                    "question": "觀念題：有 12 顆草莓，下面哪一種分法有做到「平分」？",
+                    "answerOptions": [
+                        { "text": "哥哥拿 10 顆，弟弟拿 2 顆", "rationale": "兩人拿的不一樣多，不公平。", "isCorrect": false },
+                        { "text": "姐姐拿 7 顆，妹妹拿 5 顆", "rationale": "兩人拿的不一樣多，不是平分。", "isCorrect": false },
+                        { "text": "小明拿 6 顆，小華拿 6 顆", "rationale": "兩個人都是拿 6 顆，數量一樣多，這就是平分。", "isCorrect": true },
+                        { "text": "爸爸拿 8 顆，媽媽拿 4 顆", "rationale": "爸爸比較多，媽媽比較少，這不是平分。", "isCorrect": false }
+                    ],
+                    "hint": "找找看哪一個選項中，每個人拿到的數量「完全一樣多」。"
+                },
+                {
+                    "question": "觀念題：「把 15 顆果凍，每 3 顆裝成一袋」，這是在做什麼？",
+                    "answerOptions": [
+                        { "text": "分裝", "rationale": "知道「每幾個月或每幾個裝一袋（每份數量固定）」，去求可以裝成幾袋，這叫做分裝。", "isCorrect": true },
+                        { "text": "平分", "rationale": "平分是先告訴你要分給「幾個人（份數固定）」，去求每人拿幾個。", "isCorrect": false },
+                        { "text": "加法", "rationale": "這是要把總數分開，不是變多。", "isCorrect": false },
+                        { "text": "測量", "rationale": "這跟長度或重量的測量沒有關係。", "isCorrect": false }
+                    ],
+                    "hint": "題目說「每 3 顆裝一袋」，這是把固定數量「裝」進袋子裡喔。"
+                },
+                {
+                    "question": "觀念題：「把 20 枝鉛筆，公平分給 4 個小朋友」，這是在做什麼？",
+                    "answerOptions": [
+                        { "text": "分裝", "rationale": "分裝是每幾個裝一袋，這題是分給 4 個人。", "isCorrect": false },
+                        { "text": "平分", "rationale": "知道要分給「幾個人（份數固定）」，讓每個人拿得一樣多，這叫做平分。", "isCorrect": true },
+                        { "text": "減法計算", "rationale": "這是一個平分的概念情境題。", "isCorrect": false },
+                        { "text": "估計", "rationale": "這是要精確分完，不是估計。", "isCorrect": false }
+                    ],
+                    "hint": "「公平分給 4 個小朋友」，就是要讓 4 個人拿得一樣多。"
+                },
+                {
+                    "question": "減法分裝：有 12 顆糖果，每 4 顆裝成一包。用減法算式「12－4＝8，8－4＝4，4－4＝0」，總共減了 3 次，代表可以裝成幾包？",
+                    "answerOptions": [
+                        { "text": "12 包", "rationale": "12 是糖果的總數。", "isCorrect": false },
+                        { "text": "4 包", "rationale": "4 是每一包裝的糖果顆數。", "isCorrect": false },
+                        { "text": "3 包", "rationale": "每減一次 4，就代表裝好了一包。總共減了 3 次 4，代表可以裝成 3 包。", "isCorrect": true },
+                        { "text": "0 包", "rationale": "0 代表糖果剛好全部分完，沒有剩下。", "isCorrect": false }
+                    ],
+                    "hint": "算式裡總共減去了幾個 4 呢？減去幾次就可以裝成幾包喔！"
+                },
+                {
+                    "question": "減法分裝：有 15 塊餅乾，每 5 塊裝成一袋，用連減法來分分看：15－5＝10，10－5＝5，5－5＝0。請問總共可以裝成幾袋？",
+                    "answerOptions": [
+                        { "text": "2 袋", "rationale": "減兩次還剩下 5 塊，還沒分完。", "isCorrect": false },
+                        { "text": "3 袋", "rationale": "15 連續減去 5，減了 3 次剛好變 0，代表可以裝成 3 袋。", "isCorrect": true },
+                        { "text": "5 袋", "rationale": "5 是一袋有幾塊餅乾，不是袋數。", "isCorrect": false },
+                        { "text": "10 袋", "rationale": "餅乾不夠裝到 10 袋。", "isCorrect": false }
+                    ],
+                    "hint": "數數看，15 連續減去 5，總共減了幾次才變成 0？"
+                },
+                {
+                    "question": "減法平分：有 10 枝筆要平分給 2 個小朋友。第一次每人發 1 枝（拿走 2 枝）：10－2＝8；第二次再每人發 1 枝：8－2＝6；第三次：6－2＝4；第四次：4－2＝2；第五次：2－2＝0。全部分完後，每個人拿到了幾枝筆？",
+                    "answerOptions": [
+                        { "text": "2 枝", "rationale": "2 枝是每次發出去的總筆數（因為有 2 個人）。", "isCorrect": false },
+                        { "text": "5 枝", "rationale": "每次每人拿 1 枝，總共發了 5 次（減了 5 次 2），所以每個人會拿到 5 枝筆。", "isCorrect": true },
+                        { "text": "10 枝", "rationale": "這是筆的總數，不可能每人都拿 10 枝。", "isCorrect": false },
+                        { "text": "4 枝", "rationale": "這是不正確的數量。", "isCorrect": false }
+                    ],
+                    "hint": "每發一次，每個人就會多 1 枝。算式總共減了 5 次 2，代表發了 5 次。"
+                },
+                {
+                    "question": "減法平分：有 8 個玩具要平分給 4 個人。每一次每人發 1 個（一次要拿走 4 個）：8－4＝4，第二次再發一次：4－4＝0。請問每個人可以分到幾個玩具？",
+                    "answerOptions": [
+                        { "text": "1 個", "rationale": "只發一次還會剩下 4 個玩具喔。", "isCorrect": false },
+                        { "text": "2 個", "rationale": "一次拿走 4 個，總共拿了 2 次（減了 2 次 4）剛好分完。發了 2 次代表每人得到 2 個。", "isCorrect": true },
+                        { "text": "4 個", "rationale": "4 是總人數，不是每人得到的玩具數。", "isCorrect": false },
+                        { "text": "8 個", "rationale": "總共也才 8 個玩具，沒辦法每人都分到 8 個。", "isCorrect": false }
+                    ],
+                    "hint": "因為有 4 個人，所以每發一次就要減去 4。連續減了 2 次，代表每人拿到了幾個？"
+                },
+                {
+                    "question": "老師有 24 顆糖果，每 4 顆裝成一包，可以裝成幾包？用乘法想：4 × ( ) ＝ 24，括號裡要填多少？",
+                    "answerOptions": [
+                        { "text": "5", "rationale": "4 × 5 ＝ 20，還不到 24。", "isCorrect": false },
+                        { "text": "6", "rationale": "想 4 的乘法：四六二十四，所以 4 × 6 ＝ 24，可以裝成 6 包。", "isCorrect": true },
+                        { "text": "7", "rationale": "4 × 7 ＝ 28，糖果沒有那麼多。", "isCorrect": false },
+                        { "text": "8", "rationale": "4 × 8 ＝ 32。", "isCorrect": false }
+                    ],
+                    "hint": "背背看 4 的九九乘法：4 乘以多少會剛好是 24？"
+                },
+                {
+                    "question": "有 35 本書，平分放在 5 個書架上，每個書架上有幾本書？用乘法想：( ) × 5 ＝ 35，括號裡要填多少？",
+                    "answerOptions": [
+                        { "text": "6", "rationale": "6 × 5 ＝ 30。", "isCorrect": false },
+                        { "text": "7", "rationale": "想五的乘法：七五三十五，所以 7 × 5 ＝ 35，每個書架有 7 本書。", "isCorrect": true },
+                        { "text": "8", "rationale": "8 × 5 ＝ 40。", "isCorrect": false },
+                        { "text": "9", "rationale": "9 × 5 ＝ 45。", "isCorrect": false }
+                    ],
+                    "hint": "題目的意思是：每架有幾本 × 5 個書架 ＝ 35 本。想一想誰乘以 5 是 35？"
+                },
+                {
+                    "question": "乘法填空：算式「(　) × 6 ＝ 42」，括號裡應該填入多少？",
+                    "answerOptions": [
+                        { "text": "6", "rationale": "6 × 6 ＝ 36。", "isCorrect": false },
+                        { "text": "7", "rationale": "背九九乘法：七六四十二，所以括號裡要填 7。", "isCorrect": true },
+                        { "text": "8", "rationale": "8 × 6 ＝ 48。", "isCorrect": false },
+                        { "text": "9", "rationale": "9 × 6 ＝ 54。", "isCorrect": false }
+                    ],
+                    "hint": "哪一個數字的 6 倍會剛好是 42 呢？"
+                },
+                {
+                    "question": "乘法填空：算式「8 × (　) ＝ 56」，括號裡應該填入多少？",
+                    "answerOptions": [
+                        { "text": "6", "rationale": "8 × 6 ＝ 48。", "isCorrect": false },
+                        { "text": "7", "rationale": "背九九乘法：八七五十六，所以括號裡要填 7。", "isCorrect": true },
+                        { "text": "8", "rationale": "8 × 8 ＝ 64。", "isCorrect": false },
+                        { "text": "9", "rationale": "8 × 9 ＝ 72 Horn。", "isCorrect": false }
+                    ],
+                    "hint": "背誦 8 的乘法表，看 8 乘以多少會等於 56。"
+                },
+                {
+                    "question": "1 盒布丁賣 9 元，媽媽花了 45 元買布丁，她買了幾盒？利用乘式「9 × ( ) ＝ 45」來找答案。",
+                    "answerOptions": [
+                        { "text": "4 盒", "rationale": "9 × 4 ＝ 36。", "isCorrect": false },
+                        { "text": "5 盒", "rationale": "因為 9 × 5 ＝ 45，代表 9 元的 5 倍是 45 元，所以買了 5 盒。", "isCorrect": true },
+                        { "text": "6 盒", "rationale": "9 × 6 ＝ 54。", "isCorrect": false },
+                        { "text": "45 盒", "rationale": "45 是總共花掉的錢。", "isCorrect": false }
+                    ],
+                    "hint": "九九乘法中，9 乘以幾會得到 45？"
+                },
+                {
+                    "question": "姐姐買了 4 杯一樣的飲料，總共花了 32 元。請問 1 杯飲料多少元？可以列成「( ) × 4 ＝ 32」。",
+                    "answerOptions": [
+                        { "text": "7 元", "rationale": "7 × 4 ＝ 28。", "isCorrect": false },
+                        { "text": "8 元", "rationale": "因為 8 × 4 ＝ 32，代表 1 杯 8 元，買 4 杯剛好是 32 元。", "isCorrect": true },
+                        { "text": "9 元", "rationale": "9 × 4 ＝ 36。", "isCorrect": false },
+                        { "text": "4 元", "rationale": "4 是飲料的杯數。", "isCorrect": false }
+                    ],
+                    "hint": "想一想，哪一個數字的 4 倍會是 32？"
+                },
+                {
+                    "question": "體育課有 48 個小朋友，平分成 6 組，每組有幾個人？用乘法算式「( ) × 6 ＝ 48」來想。",
+                    "answerOptions": [
+                        { "text": "7 個人", "rationale": "7 × 6 ＝ 42。", "isCorrect": false },
+                        { "text": "8 個人", "rationale": "因為 8 × 6 ＝ 48，每組 8 人，6 組剛好是 48 人。", "isCorrect": true },
+                        { "text": "9 個人", "rationale": "9 × 6 ＝ 54。", "isCorrect": false },
+                        { "text": "6 個人", "rationale": "6 是組數，不是每組的人數。", "isCorrect": false }
+                    ],
+                    "hint": "誰的 6 倍會是 48 呢？背背看 6 的乘法表或 8 的乘法表。"
+                },
+                {
+                    "question": "有一條繩子長 27 公分，平分成 3 段，每一段長幾公分？",
+                    "answerOptions": [
+                        { "text": "7 公分", "rationale": "7 × 3 ＝ 21 公分。", "isCorrect": false },
+                        { "text": "8 公分", "rationale": "8 × 3 ＝ 24 公分。", "isCorrect": false },
+                        { "text": "9 公分", "rationale": "列式為 ( ) × 3 ＝ 27。因為 9 × 3 ＝ 27，所以每一段長 9 公分。", "isCorrect": true },
+                        { "text": "10 公分", "rationale": "10 × 3 ＝ 30 公分。", "isCorrect": false }
+                    ],
+                    "hint": "把問題想成：幾公分的 3 倍會是 27 公分？"
+                },
+                {
+                    "question": "「20 朵花，每 5 朵綁成一束，可以綁成幾束？」要用乘法找出答案，應該看哪一個算式？",
+                    "answerOptions": [
+                        { "text": "5 × (　) ＝ 20", "rationale": "每束 5 朵 × 括號束 ＝ 20 朵。可以用 5 × 4 ＝ 20 找出答案是 4 束，這個列式完全正確。", "isCorrect": true },
+                        { "text": "(　) × 5 ＝ 20", "rationale": "這樣代表每束有幾朵不知道，但綁了 5 束，跟題目意思相反。", "isCorrect": false },
+                        { "text": "20 × 5 ＝ 100", "rationale": "這是在算 20 的 5 倍，不是分裝。", "isCorrect": false },
+                        { "text": "20 ＋ 5 ＝ 25", "rationale": "分裝不能用加法。", "isCorrect": false }
+                    ],
+                    "hint": "「被乘數」要放每束的數量（5 朵），「乘數」放不知道的束數。"
+                },
+                {
+                    "question": "哥哥存了 63 元，他每天都存 7 元，他是存了幾天？",
+                    "answerOptions": [
+                        { "text": "7 天", "rationale": "7 × 7 ＝ 49 元。", "isCorrect": false },
+                        { "text": "8 天", "rationale": "7 × 8 ＝ 56 元。", "isCorrect": false },
+                        { "text": "9 天", "rationale": "列式為 7 × ( ) ＝ 63。因為七九六十三，所以答案是 9 天。", "isCorrect": true },
+                        { "text": "10 天", "rationale": "7 × 10 ＝ 70 元。", "isCorrect": false }
+                    ],
+                    "hint": "每天存 7 元，存了幾天（幾倍）才會變成 63 元呢？"
+                },
+                {
+                    "question": "有 32 個積木，想把它們排成每列一樣多。如果排成了 4 列，每列會有幾個積木？",
+                    "answerOptions": [
+                        { "text": "6 個", "rationale": "6 × 4 ＝ 24。", "isCorrect": false },
+                        { "text": "7 個", "rationale": "7 × 4 ＝ 28。", "isCorrect": false },
+                        { "text": "8 個", "rationale": "列式為 ( ) × 4 ＝ 32。因為 8 × 4 ＝ 32，代表每列排 8 個。", "isCorrect": true },
+                        { "text": "9 個", "rationale": "9 × 4 ＝ 36。", "isCorrect": false }
+                    ],
+                    "hint": "想一想，哪一個數字的 4 倍會剛好是 32？"
+                },
+                {
+                    "question": "農場裡有 72 顆雞蛋，每 8 顆裝成一盒，裝完後會剛好裝成幾盒？",
+                    "answerOptions": [
+                        { "text": "7 盒", "rationale": "8 × 7 ＝ 56。", "isCorrect": false },
+                        { "text": "8 盒", "rationale": "8 × 8 ＝ 64。", "isCorrect": false },
+                        { "text": "9 盒", "rationale": "列式為 8 × ( ) ＝ 72。因為八九七十二，所以可以裝 9 盒。", "isCorrect": true },
+                        { "text": "10 盒", "rationale": "8 × 10 ＝ 80。", "isCorrect": false }
+                    ],
+                    "hint": "背誦 8 的九九乘法，8 乘以多少會等於 72？"
+                }
+            ]
+        },
+        "unit10": {
+            "title": "二下 第十單元：認識分數",
+            "questions": [
+                 {
+                    "question": "分數的基礎觀念：什麼叫做「等分」？",
+                    "answerOptions": [
+                        { "text": "隨便把東西切開就好", "rationale": "如果大小不一樣，就不能叫等分。", "isCorrect": false },
+                        { "text": "把東西分成好幾份，而且「每一份都一樣大」", "rationale": "「等」就是相等的意思，所以「等分」代表分出來的每一份大小都要完全一樣。", "isCorrect": true },
+                        { "text": "把東西切得越碎越好", "rationale": "切得碎不代表每一份都一樣大。", "isCorrect": false },
+                        { "text": "切開後中間挖一個洞", "rationale": "這跟等分沒有關係。", "isCorrect": false }
+                    ],
+                    "hint": "注意「等」這個字，它有相等、一樣的意思喔！"
+                },
+                {
+                    "question": "爸爸把一個圓形披薩切成兩塊，一塊很大、一塊很小。請問這樣有做到「二等分」嗎？",
+                    "answerOptions": [
+                        { "text": "有，因為切成了兩塊", "rationale": "只有切兩塊還不夠，重點是大小要一樣。", "isCorrect": false },
+                        { "text": "沒有，因為兩塊「不一樣大」", "rationale": "必須兩塊完全一樣大，才能叫做「二等分」。", "isCorrect": true },
+                        { "text": "有，只要切開就算等分", "rationale": "等分的條件是每一份必須相等。", "isCorrect": false },
+                        { "text": "不知道，要吃吃看才知道", "rationale": "用眼睛看大小不一樣，就已經不是等分了。", "isCorrect": false }
+                    ],
+                    "hint": "回想一下上一題「等分」的意思，必須要一樣大才可以喔。"
+                },
+                {
+                    "question": "我們常說把東西切成「一半」，這個「一半」在數學上代表什麼意思？",
+                    "answerOptions": [
+                        { "text": "把東西平分成 2 份，其中的 1 份", "rationale": "「一半」就是把東西二等分之後的其中一份，也就是二分之一。", "isCorrect": true },
+                        { "text": "把東西平分成 3 份，其中的 1 份", "rationale": "平分 3 份的話叫做三分之一。", "isCorrect": false },
+                        { "text": "把東西切掉一小角", "rationale": "這不是一半的意思。", "isCorrect": false },
+                        { "text": "把東西全部吃掉", "rationale": "這叫做全部，不是一半。", "isCorrect": false }
+                    ],
+                    "hint": "想像一顆蘋果切成兩半，一半就是分成了幾份裡的其中一份呢？"
+                },
+                {
+                    "question": "一條蛋糕「平分」切成 4 塊，哥哥吃了其中的 1 塊。哥哥吃了幾分之幾條蛋糕？",
+                    "answerOptions": [
+                        { "text": "二分之一條", "rationale": "蛋糕是切成 4 塊，不是 2 塊。", "isCorrect": false },
+                        { "text": "四分之一條", "rationale": "平分成 4 份，吃了其中的 1 份，就是四分之一（1/4）。", "isCorrect": true },
+                        { "text": "三分之一條", "rationale": "蛋糕是切成 4 塊，不是 3 塊。", "isCorrect": false },
+                        { "text": "四條", "rationale": "哥哥只有吃 1 塊，不到一條。", "isCorrect": false }
+                    ],
+                    "hint": "平分成 4 份，拿了其中的 1 份，叫作四分之..."
+                },
+                {
+                    "question": "在分數「1/3」中，中間那一條橫線叫做什麼？",
+                    "answerOptions": [
+                        { "text": "等分線", "rationale": "在數學上它有專屬的名字。", "isCorrect": false },
+                        { "text": "分隔線", "rationale": "雖然它把上下分開，但它叫做分數線。", "isCorrect": false },
+                        { "text": "分數線", "rationale": "分數中間的橫線叫做「分數線」，代表平分的意思。", "isCorrect": true },
+                        { "text": "減號", "rationale": "雖然長得像減號，但在分數裡它是分數線。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "在分數「1/5」（五分之一）中，分數線「下面」的數字 5，叫做什麼？",
+                    "answerOptions": [
+                        { "text": "分母", "rationale": "分數線下面的數字叫做「分母」，就像母親背著小孩一樣在下面。", "isCorrect": true },
+                        { "text": "分子", "rationale": "分子是在分數線的「上面」。", "isCorrect": false },
+                        { "text": "分母線", "rationale": "沒有這種說法喔。", "isCorrect": false },
+                        { "text": "等分", "rationale": "等分是一個動作，不是這個數字的名字。", "isCorrect": false }
+                    ],
+                    "hint": "想像媽媽把小孩背在身上，媽媽在下面，小孩在上面。"
+                },
+                {
+                    "question": "在分數「1/6」（六分之一）中，分數線「上面」的數字 1，叫做什麼？",
+                    "answerOptions": [
+                        { "text": "分母", "rationale": "分母在下面。", "isCorrect": false },
+                        { "text": "分子", "rationale": "分數線上面的數字叫做「分子」，就像小孩被媽媽背著，在上面。", "isCorrect": true },
+                        { "text": "第一", "rationale": "這不是分數的專有名詞。", "isCorrect": false },
+                        { "text": "分數", "rationale": "分數是整個「1/6」的統稱。", "isCorrect": false }
+                    ],
+                    "hint": "上面的數字是被媽媽（分母）背在上面的孩子喔！"
+                },
+                {
+                    "question": "數學課本寫著「八分之一」，如果我們要把它寫成數字，應該怎麼寫？",
+                    "answerOptions": [
+                        { "text": "1/8", "rationale": "讀作「八分之一」時，先唸的是分母（下面的數字），再唸分子（上面的數字）。所以是 1/8。", "isCorrect": true },
+                        { "text": "8/1", "rationale": "中文讀法是先讀分母（下面的），再讀分子（上面的）。", "isCorrect": false },
+                        { "text": "8-1", "rationale": "這是減法。", "isCorrect": false },
+                        { "text": "18", "rationale": "這是一個整數十八。", "isCorrect": false }
+                    ],
+                    "hint": "中文唸分數的時候，會「由下往上」唸。先唸分母，再唸分子。"
+                },
+                {
+                    "question": "如果看到一個分數寫作「1/7」，我們應該怎麼唸它？",
+                    "answerOptions": [
+                        { "text": "一分之七", "rationale": "唸分數要從下面（分母）往上面（分子）唸喔。", "isCorrect": false },
+                        { "text": "七分之一", "rationale": "先唸分母的 7，再唸分子的 1，所以讀作「七分之一」。", "isCorrect": true },
+                        { "text": "一和七", "rationale": "這不是分數的讀法。", "isCorrect": false },
+                        { "text": "一減七", "rationale": "中間的是分數線，不是減號。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "一包色紙有 10 張。小美拿了這包色紙的「十分之一」，請問這代表什麼意思？",
+                    "answerOptions": [
+                        { "text": "她拿了 10 包色紙", "rationale": "她只拿了一包裡面的一部分。", "isCorrect": false },
+                        { "text": "她拿了這包色紙平分成 10 份裡的 1 份", "rationale": "十分之一的意思，就是把一包平分成 10 份，拿走其中的 1 份。", "isCorrect": true },
+                        { "text": "她拿了 1 包", "rationale": "十分之一包比一包還要少。", "isCorrect": false },
+                        { "text": "她把色紙全部拿走", "rationale": "這是一包的意思。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "媽媽把一個西瓜「平分」切成 8 塊，弟弟吃了 1 塊。弟弟吃的西瓜佔了整個西瓜的幾分之幾？",
+                    "answerOptions": [
+                        { "text": "1/4", "rationale": "西瓜是平分成 8 塊，不是 4 塊。", "isCorrect": false },
+                        { "text": "1/8", "rationale": "平分成 8 塊，吃掉其中的 1 塊，就是吃了全部的八分之一（1/8）。", "isCorrect": true },
+                        { "text": "8/1", "rationale": "分母（總份數）要在下面，分子（拿走的份數）要在上面。", "isCorrect": false },
+                        { "text": "1/2", "rationale": "1/2 是一半的意思（4塊），弟弟只吃了 1 塊。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "小華畫了一個正方形，把它平分成 4 格，並且把其中的 1 格塗上紅色。紅色的部分佔了整個正方形的幾分之幾？",
+                    "answerOptions": [
+                        { "text": "二分之一", "rationale": "正方形平分成了 4 格喔。", "isCorrect": false },
+                        { "text": "四分之一", "rationale": "平分成 4 等分，塗色的有 1 等分，所以是四分之一。", "isCorrect": true },
+                        { "text": "三分之一", "rationale": "正方形平分成了 4 格。", "isCorrect": false },
+                        { "text": "十分之一", "rationale": "格數不對。", "isCorrect": false }
+                    ],
+                    "hint": "數數看總共平分成了幾格？塗了幾格？"
+                },
+                {
+                    "question": "一條緞帶平分成 5 段。每一段是這條緞帶的幾分之幾？",
+                    "answerOptions": [
+                        { "text": "1/5", "rationale": "平分成 5 段，每一小段就是全部的五分之一（1/5）。", "isCorrect": true },
+                        { "text": "5", "rationale": "5 是這條緞帶被分成的總段數。", "isCorrect": false },
+                        { "text": "1/4", "rationale": "總共分成了 5 段，不是 4 段。", "isCorrect": false },
+                        { "text": "1/6", "rationale": "段數不對。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "在「1/9」（九分之一）這個分數裡，哪一個數字代表「被平分成了幾份」？",
+                    "answerOptions": [
+                        { "text": "1", "rationale": "1 是分子，代表其中的一份。", "isCorrect": false },
+                        { "text": "9", "rationale": "分母（9）代表一個東西被平分成了幾份。", "isCorrect": true },
+                        { "text": "沒有數字代表", "rationale": "分母就是代表平分的總份數。", "isCorrect": false },
+                        { "text": "分數線", "rationale": "分數線只代表「等分」的動作。", "isCorrect": false }
+                    ],
+                    "hint": "「分母」負責告訴我們東西被切成了幾塊喔！"
+                },
+                {
+                    "question": "有一片巧克力，上面剛好有 6 個一樣大的小格子。小明剝下 1 小格吃掉，他吃了幾分之幾片巧克力？",
+                    "answerOptions": [
+                        { "text": "1/5 片", "rationale": "巧克力總共有 6 格。", "isCorrect": false },
+                        { "text": "1/6 片", "rationale": "巧克力等於被平分成了 6 份，吃掉 1 份就是吃了 1/6 片。", "isCorrect": true },
+                        { "text": "1/7 片", "rationale": "總數不是 7 格。", "isCorrect": false },
+                        { "text": "6 片", "rationale": "他只有吃一小格，不到一片。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "分數「十二分之一」，要怎麼用數字寫出來？",
+                    "answerOptions": [
+                        { "text": "12/1", "rationale": "中文「十二分」是分母，要在下面。", "isCorrect": false },
+                        { "text": "1/20", "rationale": "這是二十分之一。", "isCorrect": false },
+                        { "text": "1/12", "rationale": "中文讀作「十二分之一」，代表分母是 12，分子是 1。寫作 1/12。", "isCorrect": true },
+                        { "text": "1-12", "rationale": "這不是分數的寫法。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "把一張色紙對摺，再對摺。打開後會有幾等分的摺痕？其中一小格是幾分之幾張色紙？",
+                    "answerOptions": [
+                        { "text": "2 等分，1/2 張", "rationale": "對摺再對摺，不只 2 等分喔。", "isCorrect": false },
+                        { "text": "4 等分，1/4 張", "rationale": "對摺一次是 2 等分，再對摺一次會變成 4 等分。其中的一格就是 1/4 張。", "isCorrect": true },
+                        { "text": "3 等分，1/3 張", "rationale": "對摺不會產生奇數的等分。", "isCorrect": false },
+                        { "text": "8 等分，1/8 張", "rationale": "要對摺三次才會變成 8 等分。", "isCorrect": false }
+                    ],
+                    "hint": "你可以拿一張紙試試看，對摺兩次打開後，會出現幾個一樣大的格子？"
+                },
+                {
+                    "question": "把一個蔥油餅切成「十字形」（橫切一刀，直切一刀），這樣其中一小塊是整個蔥油餅的幾分之幾？",
+                    "answerOptions": [
+                        { "text": "1/2", "rationale": "這是一刀切成兩半的結果。", "isCorrect": false },
+                        { "text": "1/3", "rationale": "十字形切法會產生 4 塊。", "isCorrect": false },
+                        { "text": "1/4", "rationale": "十字切會將圓形平分成 4 塊，所以每一塊是四分之一（1/4）。", "isCorrect": true },
+                        { "text": "1/8", "rationale": "這切得太細了。", "isCorrect": false }
+                    ],
+                    "hint": "想想看，橫的一刀加上直的一刀，總共會把餅分成幾塊？"
+                },
+                {
+                    "question": "判斷題：弟弟把一塊橡皮擦切成了三段，但這三段長度都不一樣。弟弟可以說「每一段都是三分之一塊橡皮擦」嗎？",
+                    "answerOptions": [
+                        { "text": "可以，因為切成三段", "rationale": "分數的首要條件是必須「等分」。", "isCorrect": false },
+                        { "text": "不可以，因為長度不一樣，沒有「等分」", "rationale": "如果沒有做到「平分」（每一份一樣大），就不能用分數來表示。", "isCorrect": true }
+                    ],
+                    "hint": "分數最重要的條件就是「每一份都要一樣大」喔！"
+                },
+                {
+                    "question": "在我們生活中，常常聽到的「半個月」，其實也就是把一個月分成兩份。如果用分數來表示，半個月是幾分之幾個月？",
+                    "answerOptions": [
+                        { "text": "1/2 個月", "rationale": "「一半」就是二等分裡的其中一份，所以可以用二分之一（1/2）來表示。", "isCorrect": true },
+                        { "text": "1/3 個月", "rationale": "這是把一個月平分成三份。", "isCorrect": false },
+                        { "text": "1/4 個月", "rationale": "這是四分之一。", "isCorrect": false },
+                        { "text": "1/10 個月", "rationale": "這是十分之一。", "isCorrect": false }
+                    ],
+                    "hint": "只要聽到「一半」，它在分數裡面就是二分之一。"
+                }
+            ]
+        },
+      "unit11": {
+            "title": "二上 第五單元：容量",
+            "questions": [
+                {
+                    "question": "小華有一瓶巧克力牛奶，他把牛奶全部倒入一個比較矮、比較胖的玻璃杯裡，沒有任何一滴漏出來。請問玻璃杯裡的牛奶和原本瓶子裡的牛奶相比，哪一個比較多？",
+                    "answerOptions": [
+                        { "text": "原本瓶子裡的比較多", "rationale": "學生可能會因為瓶子外觀看起來比較高，就誤以為高瓶子裡裝的水比較多。", "isCorrect": false },
+                        { "text": "一樣多", "rationale": "雖然盛裝的杯子形狀改變了，但因為牛奶在傾倒過程中沒有變多也沒有漏掉，所以總水量維持不變。", "isCorrect": true },
+                        { "text": "矮胖玻璃杯裡的比較多", "rationale": "學生可能會因為杯子外觀看起來比較寬胖，就誤以為寬杯子裡裝的水比較多。", "isCorrect": false },
+                        { "text": "無法比較", "rationale": "只要液體總量沒有流失或增加，我們就可以透過液量保留概念進行準確的比較。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "老師把一碗滿滿的果汁倒進一個高高的水壺裡，沒有任何果汁流到外面。如果再把水壺裡的果汁全部倒回原本的碗裡，碗會怎麼樣？",
+                    "answerOptions": [
+                        { "text": "果汁會裝不滿原本的碗", "rationale": "這是一種常見的視覺誤解，以為倒進高水壺水就變少了。", "isCorrect": false },
+                        { "text": "果汁會多到從碗裡滿出來", "rationale": "液體在移動過程中體積不會自行膨脹。", "isCorrect": false },
+                        { "text": "剛好又是滿滿的一碗", "rationale": "根據液量保留概念，液體在傾倒過程中總量維持不變。", "isCorrect": true },
+                        { "text": "碗會破掉", "rationale": "這是不合理的干擾選項。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "媽媽在整理廚房，以下哪一組物品「全部都是」可以拿來裝水的容器？",
+                    "answerOptions": [
+                        { "text": "塑膠小碗、筷子、平底鍋", "rationale": "筷子中間沒有任何中空空間可以用來盛裝液體。", "isCorrect": false },
+                        { "text": "馬克杯、叉子、垃圾桶", "rationale": "叉子具有許多縫隙，無法裝水。", "isCorrect": false },
+                        { "text": "湯匙、玻璃瓶、面紙盒", "rationale": "面紙盒通常是紙製的且有大洞，不適合裝水。", "isCorrect": false },
+                        { "text": "玻璃杯、大湯碗、保溫水壺", "rationale": "這三樣物品都具有完整密封的內部空間，可以用來盛裝水或液體。", "isCorrect": true }
+                    ]
+                },
+                {
+                    "question": "把甲水壺裝滿水，全部倒入空的乙水壺裡，結果水從乙水壺滿出來流到桌上了。請問哪一個水壺的容量比較大？",
+                    "answerOptions": [
+                        { "text": "甲水壺", "rationale": "甲水壺的水可以裝滿乙水壺甚至還多出來，代表甲的容量大於乙。", "isCorrect": true },
+                        { "text": "乙水壺", "rationale": "如果乙比較大，甲的水倒進去應該裝不滿才對。", "isCorrect": false },
+                        { "text": "一樣大", "rationale": "如果一樣大，水倒過去應該剛好滿，不會流出來。", "isCorrect": false },
+                        { "text": "無法比較", "rationale": "透過互相傾倒的結果，可以明確比較出容量大小。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "把紅瓶子裝滿水，全部倒入空的藍瓶子裡，結果藍瓶子裡的水還沒有滿。請問哪一個瓶子的容量比較大？",
+                    "answerOptions": [
+                        { "text": "紅瓶子", "rationale": "紅瓶子的水裝不滿藍瓶子，代表紅瓶子比較小。", "isCorrect": false },
+                        { "text": "藍瓶子", "rationale": "藍瓶子裝了紅瓶子全部的水卻還沒滿，代表藍瓶子能裝的水比較多，容量較大。", "isCorrect": true },
+                        { "text": "一樣大", "rationale": "如果一樣大，水倒過去應該會剛好滿。", "isCorrect": false },
+                        { "text": "無法比較", "rationale": "透過傾倒觀察是否裝滿，可以直接比較容量。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "有一壺紅茶，剛好可以倒滿 6 個一樣大的馬克杯。如果阿公喝掉了 2 杯，這壺紅茶還剩下幾杯的量？",
+                    "answerOptions": [
+                        { "text": "8杯", "rationale": "這是用加法計算的錯誤結果。", "isCorrect": false },
+                        { "text": "4杯", "rationale": "全部是6杯，喝掉2杯，6 - 2 = 4，還剩下4杯。", "isCorrect": true },
+                        { "text": "3杯", "rationale": "減法計算錯誤。", "isCorrect": false },
+                        { "text": "2杯", "rationale": "這是阿公喝掉的量，不是剩下的量。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "小明用水桶裝水，一桶水剛好可以裝滿 15 瓢。洗車時用掉了 8 瓢水，水桶裡還剩下幾瓢水？",
+                    "answerOptions": [
+                        { "text": "7瓢", "rationale": "15 - 8 = 7，剩下7瓢水。", "isCorrect": true },
+                        { "text": "6瓢", "rationale": "減法計算錯誤。", "isCorrect": false },
+                        { "text": "23瓢", "rationale": "用掉水應該會變少，這裡誤用了加法。", "isCorrect": false },
+                        { "text": "8瓢", "rationale": "這是用掉的水量。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "甲、乙兩個完全一樣的空杯子，甲杯倒進 5 湯匙的水，乙杯倒進 8 湯匙的水。請問哪一個杯子裡的水比較多？",
+                    "answerOptions": [
+                        { "text": "甲杯", "rationale": "甲杯只有5湯匙，比較少。", "isCorrect": false },
+                        { "text": "乙杯", "rationale": "測量工具(湯匙)和容器(杯子)都一樣時，倒的次數越多(8 > 5)，水就越多。", "isCorrect": true },
+                        { "text": "一樣多", "rationale": "倒入的湯匙數不同，水量就不會一樣。", "isCorrect": false },
+                        { "text": "無法比較", "rationale": "透過統一的測量單位(湯匙)就可以比較出水量。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "大茶壺裝滿水，剛好可以倒滿 10 個小紙杯。現在大茶壺裡已經裝了相當於 4 個小紙杯的水，還要再加幾個小紙杯的水才會全滿？",
+                    "answerOptions": [
+                        { "text": "14個", "rationale": "誤將兩數相加。", "isCorrect": false },
+                        { "text": "5個", "rationale": "減法計算錯誤。", "isCorrect": false },
+                        { "text": "6個", "rationale": "總容量是10杯，已裝4杯，10 - 4 = 6，還缺6杯。", "isCorrect": true },
+                        { "text": "4個", "rationale": "這是已經裝進去的水量。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "A水壺裝滿可以倒出 7 杯水，B水壺裝滿可以倒出 12 杯水（杯子都一樣大）。A水壺比B水壺少裝了幾杯水？",
+                    "answerOptions": [
+                        { "text": "5杯", "rationale": "12 - 7 = 5，A比B少裝了5杯水。", "isCorrect": true },
+                        { "text": "19杯", "rationale": "這是兩個水壺合起來的容量。", "isCorrect": false },
+                        { "text": "7杯", "rationale": "這是A水壺自己的容量。", "isCorrect": false },
+                        { "text": "6杯", "rationale": "減法計算錯誤。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "一瓶汽水可以倒滿 4 個玻璃杯，桌上有 3 瓶一樣大的汽水。如果全部倒出來，一共可以倒滿幾個玻璃杯？",
+                    "answerOptions": [
+                        { "text": "7個", "rationale": "這是用加法 4 + 3 算出來的。", "isCorrect": false },
+                        { "text": "12個", "rationale": "1瓶是4杯，3瓶就是 4 + 4 + 4 = 12杯（或 4 × 3 = 12）。", "isCorrect": true },
+                        { "text": "10個", "rationale": "加法計算錯誤。", "isCorrect": false },
+                        { "text": "1個", "rationale": "這是用減法算出來的結果。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "想知道兩個形狀完全不一樣的瓶子哪一個容量比較大，下面哪一個方法最準確？",
+                    "answerOptions": [
+                        { "text": "用眼睛看誰比較高", "rationale": "比較高的瓶子可能很細，容量不一定大。", "isCorrect": false },
+                        { "text": "把一個瓶子裝滿水，倒進另一個空瓶子看看", "rationale": "直接將水互相傾倒，透過是否滿溢，是最準確直接的比較方法。", "isCorrect": true },
+                        { "text": "用手拿拿看誰比較重", "rationale": "瓶子本身的材質重量會影響感覺，且重量不等於容量。", "isCorrect": false },
+                        { "text": "看誰的瓶口比較大", "rationale": "瓶口大小跟能裝多少水沒有絕對關係。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "同一個魚缸，爸爸用水桶裝水倒進去，倒了 3 次就滿了；哥哥用小臉盆裝水倒進去，倒了 8 次才滿。請問「水桶」和「小臉盆」，哪一個容量比較大？",
+                    "answerOptions": [
+                        { "text": "水桶", "rationale": "裝滿同一個魚缸，倒的次數越少(3次)，代表那個容器每次裝的水越多，容量越大。", "isCorrect": true },
+                        { "text": "小臉盆", "rationale": "小臉盆要倒比較多次(8次)，代表它每次裝的水比較少。", "isCorrect": false },
+                        { "text": "一樣大", "rationale": "如果一樣大，倒的次數應該會相同。", "isCorrect": false },
+                        { "text": "無法判斷", "rationale": "因為裝滿的目標(魚缸)是同一個，所以可以透過次數反推容量大小。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "水桶的容量大於臉盆，臉盆的容量大於水瓢。這三個容器中，哪一個可以裝最多水？",
+                    "answerOptions": [
+                        { "text": "水瓢", "rationale": "水瓢比臉盆小，是三個當中最小的。", "isCorrect": false },
+                        { "text": "臉盆", "rationale": "臉盆雖然大於水瓢，但小於水桶。", "isCorrect": false },
+                        { "text": "水桶", "rationale": "透過遞移關係，水桶大於臉盆，臉盆大於水瓢，所以水桶最大。", "isCorrect": true },
+                        { "text": "一樣多", "rationale": "題目已明確說明容量的「大於」關係。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "桌上有一杯溫水和一杯冰水，杯子完全一模一樣，而且水都裝得滿滿的。請問哪一杯的水比較多？",
+                    "answerOptions": [
+                        { "text": "溫水比較多", "rationale": "水的溫度不會影響裝滿杯子時的容量。", "isCorrect": false },
+                        { "text": "冰水比較多", "rationale": "同上。", "isCorrect": false },
+                        { "text": "一樣多", "rationale": "既然是完全一樣的杯子且都裝滿，代表它們所能容納的水量（容量）是一樣的。", "isCorrect": true },
+                        { "text": "沒辦法比較", "rationale": "容器相同且都裝滿，可以直接判斷容量相等。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "浴缸裡本來有 12 瓢水，妹妹洗澡時又加了 5 瓢熱水和 3 瓢冷水。現在浴缸裡一共有幾瓢水？",
+                    "answerOptions": [
+                        { "text": "17瓢", "rationale": "少加了3瓢冷水。", "isCorrect": false },
+                        { "text": "15瓢", "rationale": "少加了5瓢熱水。", "isCorrect": false },
+                        { "text": "20瓢", "rationale": "12 + 5 + 3 = 20，總共是20瓢水。", "isCorrect": true },
+                        { "text": "10瓢", "rationale": "這是用減法的錯誤結果。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "如果想要趕快把家裡的大浴缸裝滿水，你應該選哪一種工具來舀水會最快？",
+                    "answerOptions": [
+                        { "text": "吃飯用的湯匙", "rationale": "湯匙容量太小，要舀非常多次。", "isCorrect": false },
+                        { "text": "喝湯用的大湯碗", "rationale": "大湯碗雖然比湯匙大，但還是不夠快。", "isCorrect": false },
+                        { "text": "刷牙用的漱口杯", "rationale": "漱口杯容量也很小。", "isCorrect": false },
+                        { "text": "洗衣服用的大水桶", "rationale": "大水桶的容量最大，一次可以裝最多水，所以裝滿浴缸的速度最快。", "isCorrect": true }
+                    ]
+                },
+                {
+                    "question": "小夫把 1 瓶果汁平分倒進 2 個大杯子裡，胖虎把 1 瓶一樣多的果汁平分倒進 4 個小杯子裡。請問兩人買的果汁總量有改變嗎？",
+                    "answerOptions": [
+                        { "text": "小夫的果汁變多了", "rationale": "果汁原本就是一瓶，不會因為倒進大杯子就變多。", "isCorrect": false },
+                        { "text": "胖虎的果汁變多了", "rationale": "胖虎杯子比較多，但都是從小杯子倒出來的，總量沒有變多。", "isCorrect": false },
+                        { "text": "果汁總量沒有改變", "rationale": "容量保留概念：無論分裝成幾個杯子，只要原本的瓶子一樣大且沒有打翻，果汁的總量就一樣多。", "isCorrect": true },
+                        { "text": "胖虎的果汁變少了", "rationale": "分裝不會讓總量減少。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "媽媽煮了一鍋玉米湯，剛好可以裝滿 8 個大碗。如果改用小碗來裝，裝滿的數量會比 8 碗多還是少？",
+                    "answerOptions": [
+                        { "text": "比 8 碗多", "rationale": "因為小碗的容量比較小，一鍋湯可以分裝成更多個小碗。", "isCorrect": true },
+                        { "text": "比 8 碗少", "rationale": "如果改用更大的鍋子來裝，數量才會變少。", "isCorrect": false },
+                        { "text": "一樣是 8 碗", "rationale": "碗的大小改變，裝滿的數量一定會跟著改變。", "isCorrect": false },
+                        { "text": "無法知道", "rationale": "根據容器大小與數量的反比關係，可以明確判斷出數量會變多。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "有一個大茶桶，裡面有 25 杯冬瓜茶。早上賣出了 12 杯，下午又賣出了 9 杯。大茶桶裡還剩下幾杯冬瓜茶？",
+                    "answerOptions": [
+                        { "text": "21杯", "rationale": "這是早上和下午總共賣出的杯數 (12 + 9)。", "isCorrect": false },
+                        { "text": "13杯", "rationale": "這是只扣掉早上賣出數量的結果 (25 - 12)。", "isCorrect": false },
+                        { "text": "4杯", "rationale": "25 - 12 - 9 = 4，或者 25 - (12 + 9) = 4，最後剩下4杯。", "isCorrect": true },
+                        { "text": "16杯", "rationale": "這是只扣掉下午賣出數量的結果 (25 - 9)。", "isCorrect": false }
+                    ]
+                }
+            ]
+        },
+        "unit12": {
+            "title": "二上 第八單元：時間",
+            "questions": [
+                 {
+                    "question": "鐘面上有兩根主要的指針，一根長、一根短。請問用來表示「幾時（幾點）」的是哪一根針？",
+                    "answerOptions": [
+                        { "text": "長針（分針）", "rationale": "長針是用來表示「幾分」的。", "isCorrect": false },
+                        { "text": "短針（時針）", "rationale": "短針走得比較慢，用來指示現在是幾點鐘（幾時）。", "isCorrect": true },
+                        { "text": "兩根針都可以", "rationale": "長短針有各自負責表示的時間單位，不能混用。", "isCorrect": false },
+                        { "text": "秒針", "rationale": "秒針是最細長走最快的針，用來表示秒，不是用來表示幾點的。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "當長針（分針）指著數字 12，短針（時針）準準地指著數字 3 時，現在是幾點鐘？",
+                    "answerOptions": [
+                        { "text": "12點3分", "rationale": "這是把長針和短針的功能看反了。", "isCorrect": false },
+                        { "text": "3點12分", "rationale": "長針指著 12 是整點（0分），不是 12 分。", "isCorrect": false },
+                        { "text": "3點鐘", "rationale": "短針指著3，長針指著12，這就是標準的「3點鐘」整點。", "isCorrect": true },
+                        { "text": "12點鐘", "rationale": "短針是看幾點的，現在短針是指著3。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "當長針（分針）從數字 12 走到數字 6，代表經過了幾分鐘？",
+                    "answerOptions": [
+                        { "text": "6分鐘", "rationale": "數字6代表的是6個5分鐘，不是6分鐘。", "isCorrect": false },
+                        { "text": "30分鐘", "rationale": "每個大格是5分鐘，走到數字6就是走了6個大格（5 × 6 = 30），也就是半小時。", "isCorrect": true },
+                        { "text": "60分鐘", "rationale": "60分鐘是走完一整圈，長針要走回到12。", "isCorrect": false },
+                        { "text": "12分鐘", "rationale": "這不是正確的分鐘數。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "長針指著數字 6，短針剛好走在 8 和 9 的正中間。請問現在是幾點鐘？",
+                    "answerOptions": [
+                        { "text": "8點半", "rationale": "短針超過8但還沒到9，代表是8點多；長針指著6代表30分（半小時），所以是8點半。", "isCorrect": true },
+                        { "text": "9點半", "rationale": "如果是9點半，短針應該走在9和10的中間。", "isCorrect": false },
+                        { "text": "8點6分", "rationale": "長針指著6是30分鐘，不是6分鐘。", "isCorrect": false },
+                        { "text": "9點6分", "rationale": "短針還沒到9，而且長針指著6是30分。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "時間單位的換算：一小時等於幾分鐘？",
+                    "answerOptions": [
+                        { "text": "10分鐘", "rationale": "10分鐘只是鐘面上走了兩大格。", "isCorrect": false },
+                        { "text": "30分鐘", "rationale": "30分鐘是半小時。", "isCorrect": false },
+                        { "text": "60分鐘", "rationale": "長針在鐘面上走完完整的一圈是60小格，剛好等於60分鐘，也就是1小時。", "isCorrect": true },
+                        { "text": "100分鐘", "rationale": "小時和分鐘的換算是以60為進位，不是100。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "長針（分針）從數字 12 走到數字 1，代表經過了幾分鐘？",
+                    "answerOptions": [
+                        { "text": "1分鐘", "rationale": "數字1和12之間有5個小格子，不是1分鐘。", "isCorrect": false },
+                        { "text": "5分鐘", "rationale": "鐘面上每個數字之間有一大格，一大格裡面有5個小格，長針走一大格就是5分鐘。", "isCorrect": true },
+                        { "text": "10分鐘", "rationale": "走到數字2才是10分鐘。", "isCorrect": false },
+                        { "text": "12分鐘", "rationale": "這是把起點的數字12當成答案了。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "長針（分針）從數字 12 走到數字 3，代表經過了幾分鐘？",
+                    "answerOptions": [
+                        { "text": "3分鐘", "rationale": "這只是看到數字3，忘了換算成5的倍數。", "isCorrect": false },
+                        { "text": "10分鐘", "rationale": "走到數字2才是10分鐘。", "isCorrect": false },
+                        { "text": "15分鐘", "rationale": "長針走1個數字是5分鐘，走到數字3就是經過了3個大格（5、10、15），所以是15分鐘。", "isCorrect": true },
+                        { "text": "30分鐘", "rationale": "走到數字6才是30分鐘。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "鐘面上的數字，一共有幾個大格子（數字從 1 排到幾）？",
+                    "answerOptions": [
+                        { "text": "10個", "rationale": "鐘面不是以10進位的。", "isCorrect": false },
+                        { "text": "12個", "rationale": "鐘面上繞一圈排了 1 到 12 的數字，總共有12個大格。", "isCorrect": true },
+                        { "text": "24個", "rationale": "一天有24小時，但是鐘面上只有排到12，短針一天要走兩圈。", "isCorrect": false },
+                        { "text": "60個", "rationale": "60是小格子的數量，代表分鐘或秒鐘。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "短針（時針）從數字 4 走到數字 5，代表經過了多長的時間？",
+                    "answerOptions": [
+                        { "text": "1分鐘", "rationale": "短針走得很慢，1分鐘根本看不出移動。", "isCorrect": false },
+                        { "text": "5分鐘", "rationale": "這是「長針（分針）」走一格的時間，不是短針。", "isCorrect": false },
+                        { "text": "1小時", "rationale": "短針是表示「小時」的，短針走1大格（從一個數字到下一個數字）剛好是1小時。", "isCorrect": true },
+                        { "text": "12小時", "rationale": "短針走12小時會剛好繞完鐘面一整圈，回到原來的位置。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "現在是上午 9 點鐘，請問再過 2 小時會是幾點鐘？",
+                    "answerOptions": [
+                        { "text": "7點鐘", "rationale": "這是「2小時前」的時間。", "isCorrect": false },
+                        { "text": "10點鐘", "rationale": "這是只過了1小時。", "isCorrect": false },
+                        { "text": "11點鐘", "rationale": "「再過」代表時間要往後加，9點 + 2小時 = 11點鐘。", "isCorrect": true },
+                        { "text": "12點鐘", "rationale": "這是過了3小時。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "現在是下午 4 點半，請問「1 個小時前」是幾點鐘？",
+                    "answerOptions": [
+                        { "text": "3點半", "rationale": "「1個小時前」代表時間要往前退，分鐘不變，只有小時減1，所以是3點半。", "isCorrect": true },
+                        { "text": "5點半", "rationale": "這是「1個小時後」的時間。", "isCorrect": false },
+                        { "text": "4點鐘", "rationale": "這是往前退了30分鐘。", "isCorrect": false },
+                        { "text": "5點鐘", "rationale": "這是往後加了30分鐘。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "長針繞著鐘面走完完整的一圈，代表經過了多久的時間？",
+                    "answerOptions": [
+                        { "text": "1分鐘", "rationale": "1分鐘是長針走1小格的時間。", "isCorrect": false },
+                        { "text": "10分鐘", "rationale": "走完一圈遠大於10分鐘。", "isCorrect": false },
+                        { "text": "30分鐘", "rationale": "30分鐘長針只走了一半（半圈）。", "isCorrect": false },
+                        { "text": "60分鐘（1小時）", "rationale": "長針走完一圈是60小格，就是60分鐘，也等於1小時。", "isCorrect": true }
+                    ]
+                },
+                {
+                    "question": "現在剛好是中午 12 點鐘，請問鐘面上的長針和短針會在哪裡？",
+                    "answerOptions": [
+                        { "text": "長針指著12，短針指著6", "rationale": "這樣是6點鐘。", "isCorrect": false },
+                        { "text": "兩根針都指著12", "rationale": "12點整點時，長針（分針）必須在12，短針（時針）也是指著12，兩根針會重疊在一起。", "isCorrect": true },
+                        { "text": "長針指著6，短針指著12", "rationale": "這樣是12點半。", "isCorrect": false },
+                        { "text": "兩根針都指著6", "rationale": "這樣是6點半。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "長針（分針）指著數字 9，代表現在是幾分鐘？",
+                    "answerOptions": [
+                        { "text": "9分鐘", "rationale": "長針看數字要乘以5，不是直接讀數字。", "isCorrect": false },
+                        { "text": "30分鐘", "rationale": "30分鐘長針會指著數字6。", "isCorrect": false },
+                        { "text": "45分鐘", "rationale": "每個大格是5分鐘，9個大格就是 9 × 5 = 45分鐘。", "isCorrect": true },
+                        { "text": "50分鐘", "rationale": "50分鐘長針會指著數字10。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "皮皮最喜歡的卡通從下午 5 點開始播，播了 30 分鐘結束。卡通結束時是幾點？",
+                    "answerOptions": [
+                        { "text": "5點半", "rationale": "5點經過30分鐘，就是5點30分，也就是5點半。", "isCorrect": true },
+                        { "text": "6點鐘", "rationale": "這樣是播了1小時。", "isCorrect": false },
+                        { "text": "4點半", "rationale": "時間不能往回倒退。", "isCorrect": false },
+                        { "text": "5點3分", "rationale": "30分鐘和3分鐘是不一樣的。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "仔細看鐘面，數字 12 和數字 1 之間有幾個小格子？每一個小格子代表多長的時間？",
+                    "answerOptions": [
+                        { "text": "1個小格，代表1分鐘", "rationale": "兩個數字之間不可能只有1個小格。", "isCorrect": false },
+                        { "text": "5個小格，代表1分鐘", "rationale": "兩數字之間有5個小格，長針每走1小格代表經過1分鐘。", "isCorrect": true },
+                        { "text": "5個小格，代表5分鐘", "rationale": "走1小格是1分鐘，走完5個小格合起來才是5分鐘。", "isCorrect": false },
+                        { "text": "12個小格，代表1分鐘", "rationale": "12是大格子的總數量，不是小格子的數量。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "皮皮寫數學功課花了 1 小時，多多寫數學功課花了 50 分鐘。請問誰花的時間比較長？",
+                    "answerOptions": [
+                        { "text": "皮皮", "rationale": "1小時等於60分鐘，60分鐘比50分鐘長，所以皮皮花的時間比較久。", "isCorrect": true },
+                        { "text": "多多", "rationale": "多多只花了50分鐘，不到一小時。", "isCorrect": false },
+                        { "text": "兩個人一樣長", "rationale": "60分鐘和50分鐘不一樣長。", "isCorrect": false },
+                        { "text": "無法比較", "rationale": "只要把小時換算成分鐘，就可以直接比大小。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "媽媽烤蛋糕需要 40 分鐘，她把蛋糕放進烤箱時，長針剛好指著數字 12。請問烤好時，長針會指著哪個數字？",
+                    "answerOptions": [
+                        { "text": "4", "rationale": "指著4是過了20分鐘（5×4=20）。", "isCorrect": false },
+                        { "text": "6", "rationale": "指著6是過了30分鐘。", "isCorrect": false },
+                        { "text": "8", "rationale": "40分鐘裡面有8個5分鐘（40 ÷ 5 = 8），所以長針會從12走到數字8。", "isCorrect": true },
+                        { "text": "12", "rationale": "指著12是過了整整60分鐘（1小時）。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "短針（時針）指在 10 和 11 之間，長針（分針）指著數字 4。請問現在是幾點鐘？",
+                    "answerOptions": [
+                        { "text": "11點20分", "rationale": "短針還沒到11，所以不能讀作11點。", "isCorrect": false },
+                        { "text": "10點4分", "rationale": "長針指著4，代表過了4個5分鐘，不是4分鐘。", "isCorrect": false },
+                        { "text": "10點20分", "rationale": "短針過了10是10點多；長針指著4是20分（5×4=20），所以是10點20分。", "isCorrect": true },
+                        { "text": "11點4分", "rationale": "短針還沒到11，長針判讀也錯誤。", "isCorrect": false }
+                    ]
+                },
+                {
+                    "question": "我們常常聽到的「半小時」，等於幾分鐘？",
+                    "answerOptions": [
+                        { "text": "15分鐘", "rationale": "15分鐘是一刻鐘，也就是走到數字3。", "isCorrect": false },
+                        { "text": "30分鐘", "rationale": "一小時是60分鐘，它的一半（半小時）就是30分鐘。", "isCorrect": true },
+                        { "text": "50分鐘", "rationale": "這快要到一個小時了。", "isCorrect": false },
+                        { "text": "60分鐘", "rationale": "60分鐘是完整的一小時。", "isCorrect": false }
+                    ]
+                }
+            ]
+        },
+        "unit13": {
+            "title": "二上 第十單元：面的大小比較",
+            "questions": [
+                {
+                    "question": "關於「平平的面」，下面哪一個物品的表面摸起來是平平的，最適合拿來當作平面？",
+                    "answerOptions": [
+                        { "text": "數學課本的封面", "rationale": "數學課本的封面是平的，沒有彎曲或凹凸不平。", "isCorrect": true },
+                        { "text": "圓圓的籃球", "rationale": "籃球的表面是彎曲的球面，不是平的。", "isCorrect": false },
+                        { "text": "削好的蘋果", "rationale": "蘋果的表面是彎曲不平的。", "isCorrect": false },
+                        { "text": "打結的繩子", "rationale": "繩子打結後凹凸不平，不是平平的面。", "isCorrect": false }
+                    ],
+                    "hint": "想像一下，哪一個東西上面可以穩穩地放著一塊橡皮擦而不會滑下來？"
+                },
+                {
+                    "question": "用眼睛直接看一看，下面哪一個物品的「面」通常是最大的？",
+                    "answerOptions": [
+                        { "text": "老師用的黑板", "rationale": "黑板的面非常大，遠大於其他選項。", "isCorrect": true },
+                        { "text": "學生的數學課本", "rationale": "課本的面比黑板小很多。", "isCorrect": false },
+                        { "text": "寫字用的墊板", "rationale": "墊板的面也比黑板小很多。", "isCorrect": false },
+                        { "text": "擦字用的橡皮擦", "rationale": "橡皮擦的面是這四個裡面最小的。", "isCorrect": false }
+                    ],
+                    "hint": "在教室裡面找一找，這四個東西哪一個需要用最多的力氣才能擦乾淨它的面呢？"
+                },
+                {
+                    "question": "想要比較兩張色紙哪一張比較大，用哪一種方法最快又最準確？",
+                    "answerOptions": [
+                        { "text": "用眼睛隨便看一看", "rationale": "如果兩張紙大小差不多，只用眼睛看容易看錯。", "isCorrect": false },
+                        { "text": "把它們揉成紙團比比看", "rationale": "揉成紙團就破壞了平平的面，無法比較面的大小。", "isCorrect": false },
+                        { "text": "把兩張色紙疊在一起比比看", "rationale": "把兩個面疊合在一起，看誰凸出來，是比較面積最直接準確的方法。", "isCorrect": true },
+                        { "text": "用手摸摸看哪張比較滑", "rationale": "紙張滑不滑和面的大小沒有關係。", "isCorrect": false }
+                    ],
+                    "hint": "當兩個東西差不多大的時候，我們可以把它們「放」在彼此的上面來找答案喔！"
+                },
+                {
+                    "question": "小明把紅紙平鋪在桌上，再把藍紙疊在紅紙上面。結果藍紙被完全包在裡面，紅紙的邊邊還露出來一圈。請問哪一張紙的面比較大？",
+                    "answerOptions": [
+                        { "text": "藍色紙", "rationale": "藍紙被包在裡面，代表它比較小。", "isCorrect": false },
+                        { "text": "紅色紙", "rationale": "紅紙除了被藍紙蓋住的地方，還有多出來露在外面的一圈，代表紅紙比較大。", "isCorrect": true },
+                        { "text": "一樣大", "rationale": "如果一樣大，疊在一起會剛好蓋住，不會露出一圈。", "isCorrect": false },
+                        { "text": "沒辦法比較", "rationale": "透過疊合並觀察露出來的部分，就可以明確比較大小。", "isCorrect": false }
+                    ],
+                    "hint": "想想看，能把別人完全蓋住，自己還多出一圈的，是不是比較大呢？"
+                },
+                {
+                    "question": "桌上有一本很厚重的字典和一本畫圖本，因為太重了很難拿起來疊合。小華可以用什麼方法比較它們封面的大小？",
+                    "answerOptions": [
+                        { "text": "用一張薄紙把字典封面的形狀描下來，再拿去和畫圖本疊合", "rationale": "這叫做「間接比較」。用描圖紙複製其中一個面的大小，再拿去跟另一個比較，是非常聰明的方法。", "isCorrect": true },
+                        { "text": "比比看哪一本書比較重", "rationale": "書的重量跟封面的大小不一定有關係（字典很厚很重，但封面可能不大）。", "isCorrect": false },
+                        { "text": "比比看哪一本書比較厚", "rationale": "書的厚度和封面的大小是兩回事。", "isCorrect": false },
+                        { "text": "數數看哪一本書的頁數比較多", "rationale": "頁數多不代表每一頁的面比較大。", "isCorrect": false }
+                    ],
+                    "hint": "搬不動的時候，我們可以把它的「形狀」用某種方式複製下來，再拿去比喔！"
+                },
+                {
+                    "question": "美美用一張描圖紙，貼在長方體積木的其中一個面上，用鉛筆沿著邊緣描下來並剪下。這張剪下來的紙片，和積木原本的那個面比起來，大小如何？",
+                    "answerOptions": [
+                        { "text": "積木的面比較大", "rationale": "沿著邊緣描下來，大小不會縮水。", "isCorrect": false },
+                        { "text": "紙片比較大", "rationale": "沿著邊緣描下來，大小不會變大。", "isCorrect": false },
+                        { "text": "一樣大", "rationale": "描下來並剪出的形狀，就是完全複製了積木那個面的大小，所以兩者一樣大。", "isCorrect": true },
+                        { "text": "不能比較", "rationale": "因為是完全貼合描繪的，所以可以肯定是一樣大的。", "isCorrect": false }
+                    ],
+                    "hint": "描圖紙就像照相機一樣，把積木的面一模一樣地複製下來了。"
+                },
+                {
+                    "question": "觀察一個長方體的面紙盒，它有上下、前後、左右很多個面。關於這些面的大小，哪一個說法是正確的？",
+                    "answerOptions": [
+                        { "text": "所有的面都一樣大", "rationale": "那是正方體的特徵，長方體的面通常不一樣大。", "isCorrect": false },
+                        { "text": "通常上下兩個面一樣大，左右兩個面一樣大", "rationale": "長方體的特徵是「相對的面」會一樣大（上和下、左和右、前和後）。", "isCorrect": true },
+                        { "text": "所有的面都不一樣大", "rationale": "長方體相對的面一定是一樣大的。", "isCorrect": false },
+                        { "text": "只有前面和後面一樣大", "rationale": "除了前後，上下、左右也各自是一樣大的。", "isCorrect": false }
+                    ],
+                    "hint": "拿一個面紙盒看看，它的「頭頂」和「屁股（底面）」是不是一樣大呢？"
+                },
+                {
+                    "question": "老師請大家用一樣大小的「正方形圖卡」來排滿數學課本的面，以此來量量看課本有多大。排圖卡的時候必須遵守什麼規則？",
+                    "answerOptions": [
+                        { "text": "可以隨便疊在一起排", "rationale": "重疊的話就無法準確量出真正的面積了。", "isCorrect": false },
+                        { "text": "圖卡中間可以留很多空隙", "rationale": "留空隙的話，量出來的面積會比實際的還要小。", "isCorrect": false },
+                        { "text": "圖卡要整齊排列，不可以重疊，也不能有空隙", "rationale": "使用個別單位測量面積時，最重要的規則就是「不重疊、不留白（不留空隙）」。", "isCorrect": true },
+                        { "text": "只要把四個角落排滿就好", "rationale": "這樣並沒有量出整個面的大小。", "isCorrect": false }
+                    ],
+                    "hint": "想像你在幫地板貼磁磚，磁磚可以疊在一起嗎？中間可以露出水泥地嗎？"
+                },
+                {
+                    "question": "為什麼我們通常會選擇「正方形」或「長方形」的圖卡來測量面的大小，而不建議使用「圓形」的圖卡來排滿桌面？",
+                    "answerOptions": [
+                        { "text": "因為圓形圖卡排在一起時中間會有很多空隙，量不準確", "rationale": "圓形的邊緣是彎曲的，無法緊密排列，一定會留下空隙，導致測量不準確。", "isCorrect": true },
+                        { "text": "因為圓形圖卡比較難剪", "rationale": "這不是數學上不建議使用的主要原因。", "isCorrect": false },
+                        { "text": "因為圓形圖卡比較醜", "rationale": "這跟外觀美醜無關。", "isCorrect": false },
+                        { "text": "因為圓形沒有角", "rationale": "沒有角不是重點，重點是它無法無縫隙地拼接。", "isCorrect": false }
+                    ],
+                    "hint": "想一想，把好幾個硬幣（圓形）平平的靠在一起，它們中間會不會露出桌子呢？"
+                },
+                {
+                    "question": "甲桌墊剛好可以排滿 8 張相同的正方形圖卡，乙桌墊剛好可以排滿 12 張相同的正方形圖卡。請問哪一個桌墊的面比較大？",
+                    "answerOptions": [
+                        { "text": "甲桌墊", "rationale": "甲桌墊只能排8張，比乙桌墊少，所以甲比較小。", "isCorrect": false },
+                        { "text": "乙桌墊", "rationale": "因為使用的圖卡大小一樣，能排越多張圖卡，代表那個面越大。12 > 8，所以乙桌墊比較大。", "isCorrect": true },
+                        { "text": "一樣大", "rationale": "排滿的張數不同，面的大小就不一樣。", "isCorrect": false },
+                        { "text": "沒辦法比較", "rationale": "只要測量用的圖卡是相同的，就可以透過數量來比較大小。", "isCorrect": false }
+                    ],
+                    "hint": "用的都是同一種圖卡，能放得下越多張圖卡的桌墊，是不是代表它越大呢？"
+                },
+                {
+                    "question": "小紅的畫紙排滿了 15 張小圓點貼紙，小藍的畫紙排滿了 9 張一樣大的小圓點貼紙。誰的畫紙面比較「小」？",
+                    "answerOptions": [
+                        { "text": "小紅", "rationale": "小紅用了15張貼紙，代表畫紙比較大。", "isCorrect": false },
+                        { "text": "小藍", "rationale": "小藍只用了9張貼紙就排滿了。9 < 15，使用的貼紙越少，代表畫紙越小。", "isCorrect": true },
+                        { "text": "一樣小", "rationale": "貼紙數量不同，大小不同。", "isCorrect": false },
+                        { "text": "無法比較", "rationale": "貼紙一樣大，所以可以比較數量。", "isCorrect": false }
+                    ],
+                    "hint": "題目問的是誰比較「小」喔！找找看誰用的貼紙數量比較少。"
+                },
+                {
+                    "question": "皮皮用他的「大」墊板量書桌，排了 4 次鋪滿；多多用他的「小」墊板量同一張書桌，排了 10 次才鋪滿。皮皮說：「4 比 10 小，所以我的墊板量出來的書桌比較小。」皮皮說得對嗎？",
+                    "answerOptions": [
+                        { "text": "對，數字小的就比較小", "rationale": "忽略了測量工具本身大小不同的因素。", "isCorrect": false },
+                        { "text": "不對，同一張書桌面的大小不會變，是因為他們用的墊板大小不一樣，排的次數才會不同", "rationale": "書桌是同一張，面積固定。使用的工具越大，需要的次數就越少；工具越小，需要的次數就越多。", "isCorrect": true },
+                        { "text": "對，因為大墊板比較重", "rationale": "這跟重量無關。", "isCorrect": false },
+                        { "text": "不對，是因為多多量錯了", "rationale": "多多沒有量錯，次數不同純粹是因為工具大小不同。", "isCorrect": false }
+                    ],
+                    "hint": "書桌還是原來的那一張書桌，大小有改變嗎？想想看為什麼皮皮只要排4次呢？"
+                },
+                {
+                    "question": "哥哥的海報需要用 20 張相同的撲克牌才能蓋滿，弟弟的海報需要用 15 張相同的撲克牌才能蓋滿。哥哥的海報比弟弟的海報大了幾張撲克牌的面？",
+                    "answerOptions": [
+                        { "text": "35 張", "rationale": "這是把兩人用的撲克牌數量相加了。", "isCorrect": false },
+                        { "text": "15 張", "rationale": "這是弟弟海報的面積。", "isCorrect": false },
+                        { "text": "20 張", "rationale": "這是哥哥海報的面積。", "isCorrect": false },
+                        { "text": "5 張", "rationale": "20 - 15 = 5。哥哥比弟弟多用了 5 張撲克牌才蓋滿，代表大了 5 張撲克牌的面。", "isCorrect": true }
+                    ],
+                    "hint": "用哥哥需要的數量減去弟弟需要的數量，就可以知道大了多少喔。"
+                },
+                {
+                    "question": "桌面上剛好可以排滿相同的正方形小積木。每一排有 5 個，一共排了 4 排。請問這個桌面一共有幾個小積木的面這麼大？",
+                    "answerOptions": [
+                        { "text": "9 個", "rationale": "這是把 5 和 4 相加的結果（5+4=9）。", "isCorrect": false },
+                        { "text": "20 個", "rationale": "一排5個，有4排，就是5個4次。 5 × 4 = 20，總共是20個小積木的面。", "isCorrect": true },
+                        { "text": "16 個", "rationale": "這是 4 × 4 的結果。", "isCorrect": false },
+                        { "text": "25 個", "rationale": "這是 5 × 5 的結果。", "isCorrect": false }
+                    ],
+                    "hint": "你可以用乘法來算喔！5的4倍是多少呢？"
+                },
+                {
+                    "question": "下面哪一句話，是在描述數學課學到的「面的大小（面積）」？",
+                    "answerOptions": [
+                        { "text": "這個箱子可以裝 10 本書", "rationale": "這是指「容量」或「體積」。", "isCorrect": false },
+                        { "text": "這條繩子有 3 枝鉛筆那麼長", "rationale": "這是指「長度」。", "isCorrect": false },
+                        { "text": "這顆西瓜跟 5 顆蘋果一樣重", "rationale": "這是指「重量」。", "isCorrect": false },
+                        { "text": "這張桌子剛好可以鋪滿 6 張報紙", "rationale": "用報紙「鋪滿」桌面，這是在描述這張桌子的面有多大（面積）。", "isCorrect": true }
+                    ],
+                    "hint": "想想看，「鋪滿」某個地方，是不是就是在講它的「面」有多大？"
+                },
+                {
+                    "question": "想要比較兩片形狀奇怪的樹葉哪一片比較大，把甲樹葉和乙樹葉疊在一起後，發現有些地方甲凸出來，有些地方乙凸出來。這時候可以得到什麼結論？",
+                    "answerOptions": [
+                        { "text": "甲樹葉比較大", "rationale": "只憑部分凸出無法斷定整體大小。", "isCorrect": false },
+                        { "text": "乙樹葉比較大", "rationale": "同上，乙也有部分沒被蓋住。", "isCorrect": false },
+                        { "text": "兩片樹葉一樣大", "rationale": "凸出來的部分不一定一樣多，所以不能說一樣大。", "isCorrect": false },
+                        { "text": "只疊在一起無法立刻分辨，需要把凸出來的地方剪下來比，或是用方格紙來測量", "rationale": "當互相都有凸出的部分時，直接疊合無法判斷，需要藉助剪拼或方格紙等工具來精細比較。", "isCorrect": true }
+                    ],
+                    "hint": "你凸一塊、我凸一塊，這時候光是用眼睛看是看不出來誰比較大的喔！"
+                },
+                {
+                    "question": "小夫想知道鉛筆盒的底面和橡皮擦的底面誰比較大。他拿一張紙先描下橡皮擦的底面並剪下來，再去疊在鉛筆盒的底面上。結果發現，剪下來的形狀完全被鉛筆盒的底面包在裡面。這代表什麼？",
+                    "answerOptions": [
+                        { "text": "鉛筆盒的底面比較大", "rationale": "因為橡皮擦的形狀能完全放在鉛筆盒底面裡面，代表鉛筆盒的底面範圍更大。", "isCorrect": true },
+                        { "text": "橡皮擦的底面比較大", "rationale": "如果橡皮擦比較大，紙片就會凸出鉛筆盒外面。", "isCorrect": false },
+                        { "text": "兩個底面一樣大", "rationale": "如果一樣大，會剛好重合。", "isCorrect": false },
+                        { "text": "紙張比較大", "rationale": "紙張已經被剪成橡皮擦底面的大小了。", "isCorrect": false }
+                    ],
+                    "hint": "誰被包在裡面，誰就是比較小的那個喔！"
+                },
+                {
+                    "question": "測量同一塊黑板的面。如果用「綠色大磁鐵」去排，需要 20 個才排滿；如果用「藍色小磁鐵」去排，需要 50 個才排滿。請問哪一種磁鐵的「面」比較大？",
+                    "answerOptions": [
+                        { "text": "綠色大磁鐵", "rationale": "因為綠色磁鐵的面比較大，所以只需要較少的數量（20個）就能排滿黑板。", "isCorrect": true },
+                        { "text": "藍色小磁鐵", "rationale": "藍色磁鐵需要用到50個，代表它比較小。", "isCorrect": false },
+                        { "text": "一樣大", "rationale": "需要的數量差很多，代表磁鐵大小不同。", "isCorrect": false },
+                        { "text": "沒辦法判斷", "rationale": "測量同一個區域時，需要的數量越少，代表該工具的面越大。", "isCorrect": false }
+                    ],
+                    "hint": "要填滿同一個大黑板，只需要幾個就夠了的磁鐵，代表它自己本身很大還是很小呢？"
+                },
+                {
+                    "question": "老師在黑板上畫了甲、乙兩個圖形。甲圖形是由 4 個相同的小正方形積木拼成的，乙圖形是由 6 個相同的小正方形積木拼成的。哪一個圖形的面比較大？",
+                    "answerOptions": [
+                        { "text": "甲圖形", "rationale": "甲只有4個單位大，比乙的6個單位小。", "isCorrect": false },
+                        { "text": "乙圖形", "rationale": "組成乙圖形的小正方形數量（6個）比甲圖形（4個）多，所以乙的面比較大。", "isCorrect": true },
+                        { "text": "一樣大", "rationale": "4 個和 6 個不一樣多。", "isCorrect": false },
+                        { "text": "不一定，要看積木怎麼拼", "rationale": "不管怎麼拼（長條或正方），只要積木數量多，整體的面積（面的大小）就會比較大。", "isCorrect": false }
+                    ],
+                    "hint": "積木越多，拼出來的圖形總共的「面」就會越大喔！"
+                },
+                {
+                    "question": "媽媽想在房間的地板鋪滿巧拼地墊。如果她希望「排的次數越少越好」就能鋪滿整個房間，她應該去大賣場買哪一種地墊？",
+                    "answerOptions": [
+                        { "text": "面越小的地墊", "rationale": "買小地墊，就要排很多次、買很多片才鋪得滿。", "isCorrect": false },
+                        { "text": "面越大的地墊", "rationale": "地墊的面越大，鋪滿同一個房間所需要的數量（次數）就會越少。", "isCorrect": true },
+                        { "text": "買三角形的地墊", "rationale": "形狀和排的次數無關，主要是看面的大小。", "isCorrect": false },
+                        { "text": "買圓形的地墊", "rationale": "圓形地墊會有空隙，不適合用來鋪滿地板。", "isCorrect": false }
+                    ],
+                    "hint": "想省時省力排少一點，就要買一片可以遮住很多地板的地墊！"
+                }
+            ]
+        }
+    };
+
+    // ==========================================
+    // 測驗系統邏輯程式碼
+    // ==========================================
+    let currentUnitId = null;
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    window.onload = function() {
+        const btnContainer = document.getElementById('unit-buttons');
+        for (const unitId in quizData) {
+            const btn = document.createElement('button');
+            btn.className = 'unit-btn';
+            btn.innerText = quizData[unitId].title;
+            btn.onclick = () => startQuiz(unitId);
+            btnContainer.appendChild(btn);
+        }
+    };
+
+    function startQuiz(unitId) {
+        currentUnitId = unitId;
+        currentQuestions = quizData[unitId].questions;
+        currentQuestionIndex = 0;
+        score = 0;
+        
+        document.getElementById('menu-screen').classList.remove('active-screen');
+        document.getElementById('score-board').classList.remove('active-screen');
+        document.getElementById('quiz-screen').classList.add('active-screen');
+        
+        document.getElementById('current-unit-title').innerText = quizData[unitId].title;
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        document.getElementById('feedback').style.display = 'none';
+        document.getElementById('submit-btn').style.display = 'block';
+        document.getElementById('next-btn').style.display = 'none';
+        
+        const q = currentQuestions[currentQuestionIndex];
+        document.getElementById('progress').innerText = `${currentQuestionIndex + 1} / ${currentQuestions.length}`;
+        document.getElementById('question-text').innerText = `${currentQuestionIndex + 1}. ${q.question}`;
+        
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+        
+        q.answerOptions.forEach((option, index) => {
+            const label = document.createElement('label');
+            label.className = 'option-label';
+            label.innerHTML = `<input type="radio" name="option" value="${index}"> ${option.text}`;
+            optionsContainer.appendChild(label);
+        });
+    }
+
+    function checkAnswer() {
+        const selected = document.querySelector('input[name="option"]:checked');
+        if (!selected) {
+            alert('請先選擇一個答案！');
+            return;
+        }
+
+        const selectedIndex = parseInt(selected.value);
+        const q = currentQuestions[currentQuestionIndex];
+        const feedbackDiv = document.getElementById('feedback');
+        
+        document.getElementById('submit-btn').style.display = 'none';
+        const nextBtn = document.getElementById('next-btn');
+        nextBtn.style.display = 'block';
+        feedbackDiv.style.display = 'block';
+
+        if (currentQuestionIndex === currentQuestions.length - 1) {
+            nextBtn.innerText = "完成測驗，觀看成績 ➜";
+            nextBtn.style.backgroundColor = "#8e44ad";
+        } else {
+            nextBtn.innerText = "下一題 ➜";
+            nextBtn.style.backgroundColor = "#f39c12";
+        }
+
+        document.querySelectorAll('input[name="option"]').forEach(input => input.disabled = true);
+
+        if (q.answerOptions[selectedIndex].isCorrect) {
+            score++;
+            feedbackDiv.className = 'correct';
+            feedbackDiv.innerHTML = `✅ 答對了！<br><span style="font-weight:normal; font-size:16px; color:#333; margin-top:8px; display:inline-block;">解析：${q.answerOptions[selectedIndex].rationale}</span>`;
+        } else {
+            feedbackDiv.className = 'incorrect';
+            const correctAnswer = q.answerOptions.find(opt => opt.isCorrect).text;
+            feedbackDiv.innerHTML = `❌ 答錯了。正確答案是：<strong>${correctAnswer}</strong><br><span style="font-weight:normal; font-size:16px; color:#333; margin-top:8px; display:inline-block;">解析：${q.answerOptions[selectedIndex].rationale}</span>`;
+        }
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentQuestions.length) {
+            loadQuestion();
+        } else {
+            showScore();
+        }
+    }
+
+    function showScore() {
+        document.getElementById('menu-screen').classList.remove('active-screen');
+        document.getElementById('quiz-screen').classList.remove('active-screen');
+        document.getElementById('score-board').classList.add('active-screen');
+        
+        document.getElementById('final-score').innerText = `${score} / ${currentQuestions.length}`;
+        
+        const percentage = Math.round((score / currentQuestions.length) * 100);
+        let msg = "";
+        if(percentage === 100) msg = "太完美了！你全答對了！🏆";
+        else if(percentage >= 80) msg = "太厲害了！你對這個單元非常熟悉喔！💯";
+        else if(percentage >= 60) msg = "表現不錯！繼續保持學習熱情！👍";
+        else msg = "別氣餒，看過解析多複習幾次，一定會越來越好的！💪";
+        
+        document.getElementById('score-message').innerText = msg;
+    }
+
+    function returnToMenu() {
+        document.getElementById('score-board').classList.remove('active-screen');
+        document.getElementById('quiz-screen').classList.remove('active-screen');
+        document.getElementById('menu-screen').classList.add('active-screen');
+    }
+</script>
+
+</body>
+</html>
