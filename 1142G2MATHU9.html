@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>二下數學測驗 - 第九單元：分裝與平分</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fdf2f8; /* 溫馨的櫻花淺粉底色 */
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(190, 24, 93, 0.15);
+            padding: 24px;
+            width: 100%;
+            max-width: 540px;
+            max-height: 96vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        h2 {
+            color: #be185d;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #fbcfe8;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .progress {
+            font-size: 0.9em;
+            color: #6b7280;
+            text-align: right;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .question {
+            font-size: 1.15em;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            color: #1f2937;
+            word-break: break-all;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1em;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            outline: none;
+            width: 100%;
+            word-break: break-all;
+        }
+
+        @media (hover: hover) {
+            .option-btn:hover:not([disabled]) {
+                background-color: #fce7f3;
+                border-color: #ec4899;
+            }
+        }
+
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .feedback-box {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+
+        .feedback-box.correct {
+            background-color: #ecfdf5;
+            border-left: 5px solid #10b981;
+            color: #065f46;
+        }
+
+        .feedback-box.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .next-btn {
+            width: 100%;
+            background-color: #ec4899;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            text-align: center;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .next-btn:hover {
+            background-color: #db2777;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .score {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #db2777;
+            margin: 16px 0;
+        }
+
+        .restart-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .restart-btn:hover {
+            background-color: #059669;
+        }
+
+        @media screen and (max-width: 380px) {
+            body { padding: 6px; }
+            .quiz-container { padding: 16px; }
+            h2 { font-size: 1.2em; margin-bottom: 12px; }
+            .question { font-size: 1.05em; margin-bottom: 12px; }
+            .option-btn { padding: 10px 14px; font-size: 0.95em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <h2>第九單元：分裝與平分 測驗</h2>
+            <div class="progress" id="progress-text">第 1 / 20 題</div>
+            <div class="question" id="question-text">題目載入中...</div>
+            <div class="options-container" id="options-box"></div>
+            <div class="feedback-box" id="feedback-text"></div>
+            <button class="next-btn" id="next-button" onclick="nextQuestion()">下一題</button>
+        </div>
+
+        <div id="result-screen" class="result-screen" style="width: 100%;">
+            <h2>測驗結束！</h2>
+            <p style="margin: 8px 0;">你的總分數是：</p>
+            <div class="score" id="final-score">0 分</div>
+            <p id="evaluation-text" style="margin-bottom: 20px; font-weight: bold; color: #555;"></p>
+            <button class="restart-btn" onclick="restartQuiz()">再測驗一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 20題分裝與平分題目資料
+        const questions = [
+            {
+                "question": "數學裡的「平分」是什麼意思？",
+                "options": ["把東西隨便分給別人", "把東西分成好幾份，而且「每一份都一樣多」", "把東西全部分給同一個人", "年紀小的人可以分比較多"],
+                "answer": 1,
+                "rationale": "「平」就是公平、相等的意思，所以「平分」代表分出來的每一份數量都要完全一樣多。"
+            },
+            {
+                "question": "有 12 顆草莓，下面哪一種分法有做到「平分」？",
+                "options": ["哥哥拿 10 顆，弟弟拿 2 顆", "姐姐拿 7 顆，妹妹拿 5 顆", "爸爸拿 8 顆，媽媽拿 4 顆", "小明拿 6 顆，小華拿 6 顆"],
+                "answer": 3,
+                "rationale": "只有小明和小華都是拿 6 顆，兩個人拿到的數量完全一樣多，這才叫做平分。"
+            },
+            {
+                "question": "「把 15 顆果凍，每 3 顆裝成一袋」，這是在做什麼？",
+                "options": ["加法", "分裝", "平分", "測量"],
+                "answer": 1,
+                "rationale": "知道「每份的數量固定（每3顆一袋）」，去求可以裝成幾袋，這種情境叫做「分裝」。"
+            },
+            {
+                "question": "「把 20 枝鉛筆，公平分給 4 個小朋友」，這是在做什麼？",
+                "options": ["分裝", "減法", "平分", "估計"],
+                "answer": 2,
+                "rationale": "知道要分給「幾個人或幾份（份數固定）」，去求每個人拿幾枝，這叫做「平分」。"
+            },
+            {
+                "question": "有 12 顆糖果，每 4 顆裝成一包。用減法算：12－4＝8，8－4＝4，4－4＝0。算式總共減了 3 次，代表可以裝成幾包？",
+                "options": ["12 包", "4 包", "3 包", "0 包"],
+                "answer": 2,
+                "rationale": "每減一次 4，就代表裝好了一包。總共減了 3 次 4 剛好分完，代表可以裝成 3 包。"
+            },
+            {
+                "question": "有 15 塊餅乾要平分給 3 個人。每次每人發 1 塊（拿走 3 塊），連續減了 5 次剛好分完：15－3＝12... 3－3＝0。這代表每個人得到幾塊餅乾？",
+                "options": ["2 塊", "3 塊", "5 塊", "15 塊"],
+                "answer": 2,
+                "rationale": "發一次每個人就拿到 1 塊餅乾。連續減了 5 次（發了 5 次），代表每個人都拿到了 5 塊餅乾。"
+            },
+            {
+                "question": "老師有 24 顆糖果，每 4 顆裝成一包，可以裝成幾包？用乘法想：4 × ( ) ＝ 24，括號裡要填多少？",
+                "options": ["5", "6", "7", "8"],
+                "answer": 1,
+                "rationale": "在心裡背 4 的九九乘法：四六二十四，所以 4 × 6 ＝ 24，代表可以裝成 6 包。"
+            },
+            {
+                "question": "有 35 本書，平分放在 5 個書架上，每個書架上有幾本書？用乘法想：( ) × 5 ＝ 35，括號裡要填多少？",
+                "options": ["6", "7", "8", "9"],
+                "answer": 1,
+                "rationale": "想五的乘法：七五三十五，所以 7 × 5 ＝ 35，代表每個書架上有 7 本書。"
+            },
+            {
+                "question": "算式「(　) × 6 ＝ 42」，括號裡應該填入多少？",
+                "options": ["6", "7", "8", "9"],
+                "answer": 1,
+                "rationale": "背六的乘法表或是七的乘法表：七六四十二，所以括號裡要填 7。"
+            },
+            {
+                "question": "算式「8 × (　) ＝ 56」，括號裡應該填入多少？",
+                "options": ["6", "7", "8", "9"],
+                "answer": 1,
+                "rationale": "背八的乘法表：八七五十六，所以括號裡要填 7。"
+            },
+            {
+                "question": "1 盒布丁賣 9 元，媽媽花了 45 元買布丁，她買了幾盒？利用算式「9 × ( ) ＝ 45」來找答案。",
+                "options": ["4 盒", "5 盒", "6 盒", "36 盒"],
+                "answer": 1,
+                "rationale": "想 9 的乘法：九五四十五，因為 9 × 5 ＝ 45，所以媽媽買了 5 盒。"
+            },
+            {
+                "question": "姐姐買了 4 杯一樣的飲料，總共花了 32 元。請問 1 杯飲料多少元？可以列成「( ) × 4 ＝ 32」。",
+                "options": ["7 元", "8 元", "9 元", "28 元"],
+                "answer": 1,
+                "rationale": "想 4 的乘法或 8 的乘法：八四三十二，因為 8 × 4 ＝ 32，代表 1 杯飲料是 8 元。"
+            },
+            {
+                "question": "體育課有 48 個小朋友，平分成 6 組，每組有幾個人？",
+                "options": ["7 個人", "8 個人", "9 個人", "6 個人"],
+                "answer": 1,
+                "rationale": "列式為 ( ) × 6 ＝ 48。八六四十八，所以每組有 8 個人。"
+            },
+            {
+                "question": "有一條繩子長 27 公分，平分成 3 段，每一段長幾公分？",
+                "options": ["7 公分", "8 公分", "9 公分", "10 公分"],
+                "answer": 2,
+                "rationale": "列式為 ( ) × 3 ＝ 27。九三二十七，所以每一段長 9 公分。"
+            },
+            {
+                "question": "「20 朵花，每 5 朵綁成一束，可以綁成幾束？」要用乘法找出答案，應該看哪一個算式？",
+                "options": ["(　) × 5 ＝ 20", "20 × 5 ＝ 100", "20 ＋ 5 ＝ 25", "5 × (　) ＝ 20"],
+                "answer": 3,
+                "rationale": "「每束 5 朵」是單位量要放在前面，束數不知道放括號。所以正確算式是 5 × ( ) ＝ 20。"
+            },
+            {
+                "question": "「28 顆蘋果，平分給 7 個小朋友，每人分到幾顆？」要用乘法找出答案，應該看哪一個算式？",
+                "options": ["7 × (　) ＝ 28", "(　) × 7 ＝ 28", "28 × 7 ＝ 196", "28 － 7 ＝ 21"],
+                "answer": 1,
+                "rationale": "「每人分到幾顆」不知道要放前面，人數 7 人放後面。所以正確算式是 ( ) × 7 ＝ 28。"
+            },
+            {
+                "question": "哥哥存了 63 元，他每天都存 7 元，他是存了幾天？",
+                "options": ["7 天", "8 天", "9 天", "10 天"],
+                "answer": 2,
+                "rationale": "列式為 7 × ( ) ＝ 63。七九六十三，代表他存了 9 天。"
+            },
+            {
+                "question": "有 32 個積木，想把它們排成每列一樣多。如果排成了 4 列，每列會有幾個積木？",
+                "options": ["6 個", "7 個", "8 個", "9 個"],
+                "answer": 2,
+                "rationale": "列式為 ( ) × 4 ＝ 32。八四三十二，代表每列有 8 個積木。"
+            },
+            {
+                "question": "農場裡有 72 顆雞蛋，每 8 顆裝成一盒，裝完後會剛好裝成幾盒？",
+                "options": ["7 盒", "8 盒", "9 盒", "10 盒"],
+                "answer": 2,
+                "rationale": "列式為 8 × ( ) ＝ 72。八九七十二，所以可以裝成 9 盒。"
+            },
+            {
+                "question": "一包色紙有 50 張，平分發給 5 個小朋友，每個小朋友拿到幾張？",
+                "options": ["8 張", "9 張", "10 張", "45 張"],
+                "answer": 2,
+                "rationale": "列式為 ( ) × 5 ＝ 50。想一想誰的 5 倍是 50？10 × 5 ＝ 50，所以每人拿到 10 張。"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `第 ${currentQuestionIndex + 1} / ${questions.length} 題`;
+            document.getElementById("question-text").innerText = currentQuestion.question;
+            
+            const optionsBox = document.getElementById("options-box");
+            optionsBox.innerHTML = "";
+            
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.className = "option-btn";
+                button.innerText = option;
+                button.onclick = () => selectOption(index);
+                optionsBox.appendChild(button);
+            });
+            
+            document.getElementById("feedback-text").style.display = "none";
+            document.getElementById("next-button").style.display = "none";
+        }
+
+        function selectOption(selectedIndex) {
+            if (answered) return;
+            answered = true;
+            
+            const currentQuestion = Math.min(currentQuestionIndex, questions.length - 1);
+            const qData = questions[currentQuestion];
+            const buttons = document.getElementsByClassName("option-btn");
+            const feedbackBox = document.getElementById("feedback-text");
+            
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+            
+            if (selectedIndex === qData.answer) {
+                buttons[selectedIndex].classList.add("correct");
+                feedbackBox.className = "feedback-box correct";
+                feedbackBox.innerHTML = `<strong>⭕ 答對了！觀念很清楚喔！</strong><br>${qData.rationale}`;
+                score += 5;
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedbackBox.className = "feedback-box wrong";
+                feedbackBox.innerHTML = `<strong>❌ 答錯囉！請看解析想一想：</strong><br>${qData.rationale}`;
+            }
+            
+            feedbackBox.style.display = "block";
+            document.getElementById("next-button").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "block";
+            document.getElementById("final-score").innerText = `${score} 分`;
+            
+            const evaluationText = document.getElementById("evaluation-text");
+            if (score === 100) {
+                evaluationText.innerText = "太完美了！你對分裝和平分的算式列法完全搞懂了！💯";
+            } else if (score >= 80) {
+                evaluationText.innerText = "表現非常棒！九九乘法表背得很熟，找未知數也很厲害喔！🌟";
+            } else if (score >= 60) {
+                evaluationText.innerText = "及格了！要特別注意「被乘數」和「乘數」的位置不要放反囉。👍";
+            } else {
+                evaluationText.innerText = "再多練習幾次！試著把題目念出來，想一想『誰是每一份的數量』，加油！💪";
+            }
+        }
+
+        function restartQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            document.getElementById("result-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
