@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>二下數學測驗 - 第二單元：重量核心觀念</title>
+    <style>
+        /* 全域邊距修正，防止元件被撐開 */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fffbeb; /* 溫暖的淺黃色底 */
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        /* 核心主外框：隨螢幕自適應寬度 */
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            width: 100%;
+            max-width: 540px;
+            max-height: 96vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        h2 {
+            color: #d97706;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #fde68a;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .progress {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            text-align: right;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .question {
+            font-size: 1.15em;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            color: #2c3e50;
+            word-break: break-all;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1em;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            outline: none;
+            width: 100%;
+            word-break: break-all;
+        }
+
+        @media (hover: hover) {
+            .option-btn:hover:not([disabled]) {
+                background-color: #fef3c7;
+                border-color: #d97706;
+            }
+        }
+
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .feedback-box {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+
+        .feedback-box.correct {
+            background-color: #ecfdf5;
+            border-left: 5px solid #10b981;
+            color: #065f46;
+        }
+
+        .feedback-box.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .next-btn {
+            width: 100%;
+            background-color: #d97706;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            text-align: center;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .next-btn:hover {
+            background-color: #b45309;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .score {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #d97706;
+            margin: 16px 0;
+        }
+
+        .restart-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .restart-btn:hover {
+            background-color: #059669;
+        }
+
+        @media screen and (max-width: 380px) {
+            body { padding: 6px; }
+            .quiz-container { padding: 16px; }
+            h2 { font-size: 1.2em; margin-bottom: 12px; }
+            .question { font-size: 1.05em; margin-bottom: 12px; }
+            .option-btn { padding: 10px 14px; font-size: 0.95em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <h2>第二單元：重量（觀念聚焦版）</h2>
+            <div class="progress" id="progress-text">第 1 / 20 題</div>
+            <div class="question" id="question-text">題目載入中...</div>
+            <div class="options-container" id="options-box"></div>
+            <div class="feedback-box" id="feedback-text"></div>
+            <button class="next-btn" id="next-button" onclick="nextQuestion()">下一題</button>
+        </div>
+
+        <div id="result-screen" class="result-screen" style="width: 100%;">
+            <h2>測驗結束！</h2>
+            <p style="margin: 8px 0;">你的總分數是：</p>
+            <div class="score" id="final-score">0 分</div>
+            <p id="evaluation-text" style="margin-bottom: 20px; font-weight: bold; color: #555;"></p>
+            <button class="restart-btn" onclick="restartQuiz()">再測驗一次</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                "question": "小明右手拿課本，左手拿鉛筆，不用任何工具就覺得課本沉甸甸的。這種比較重量的方法稱為什麼？",
+                "options": ["感官體驗（用手掂掂看）", "直接比較", "間接比較", "數格子比較"],
+                "answer": 0,
+                "rationale": "用自己的身體或雙手直接去感受物品的重量、掂掂看，這種方法叫做「感官體驗」。"
+            },
+            {
+                "question": "兩隻小熊在公園玩蹺蹺板，胖胖熊坐的那一端「沉到地面」，瘦瘦熊那一端「翹得很高」。請問誰比較重？",
+                "options": ["瘦瘦熊比較重", "胖胖熊比較重", "一樣重", "沒辦法比"],
+                "answer": 1,
+                "rationale": "直接比較重量時，蹺蹺板或天平「沉下去（比較低）」的那一端，代表放了比較重的物品。所以胖胖熊比較重。"
+            },
+            {
+                "question": "小華把一顆蘋果和一顆草莓放上天平。天平的左邊（蘋果）往下沉，右邊（草莓）往上升。這代表什麼？",
+                "options": ["草莓比蘋果重", "蘋果比草莓重", "蘋果和草莓一樣重", "天平壞掉了"],
+                "answer": 1,
+                "rationale": "天平往下沉的那一邊比較重。左邊的蘋果往下沉，代表蘋果比草莓重。這屬於「直接比較」。"
+            },
+            {
+                "question": "把一個空水杯和一個裝滿水的水杯放在天平兩端，天平的兩邊「一樣高，沒有任何一邊沉下去」。這代表什麼？",
+                "options": ["裝滿水的水杯比較重", "空水杯比較重", "兩個水杯一樣重", "這是不可能發生的"],
+                "answer": 2,
+                "rationale": "當天平兩端一樣高、沒有傾斜時，代表兩邊的物品「一樣重」，這叫作平衡。"
+            },
+            {
+                "question": "小同想知道玩具車和玩具飛機誰比較重，他發現玩具車和 5 個積木一樣重，玩具飛機和 3 個積木一樣重（積木都相同）。誰比較重？",
+                "options": ["玩具車", "玩具飛機", "一樣重", "沒辦法比，因為沒有疊在一起"],
+                "answer": 0,
+                "rationale": "玩具車等於 5 個積木，玩具飛機等於 3 個積木。因為 5 比 3 多，所以玩具車比較重。利用積木當固定單位來比，這叫作「間接比較」。"
+            },
+            {
+                "question": "在做重量的「間接比較」時（例如數硬幣或積木），選用的個別單位硬幣或積木必須要怎麼樣？",
+                "options": ["要一模一樣大、一樣重", "要五顏六色比較漂亮", "隨便拿什麼形狀都可以", "越重越好"],
+                "answer": 0,
+                "rationale": "間接比較時，做為測量標準的個別單位（如積木、代幣）必須完全一模一樣，數出來的數量才能公平拿來比較喔！"
+            },
+            {
+                "question": "小美用雙手當秤。她的右手放了一個皮球，左手放了一個鉛筆盒，她感覺兩隻手「差不多重，分不出來」。接下來她可以用什麼方法更準確地比出輕重？",
+                "options": ["用眼睛一直盯著看", "猜拳決定", "放上天平或蹺蹺板做「直接比較」", "換成用腳踢踢看"],
+                "answer": 2,
+                "rationale": "當用手掂掂看（感官體驗）分不出輕重時，可以使用天平或蹺蹺板等工具讓它們平放對比，進行更準確的「直接比較」。"
+            },
+            {
+                "question": "一個大紙箱和一個小鐵球。用眼睛看紙箱好大，但用手拿卻發現小鐵球沉得多。這告訴我們什麼道理？",
+                "options": ["看起來比較大的東西一定比較重", "不一定，不能只用眼睛看大小來猜重量，要用手掂或用工具量", "看起來小的東西一定比較重", "眼睛看到的才是對的"],
+                "answer": 1,
+                "rationale": "「大」不代表「重」（例如大棉花和鐵球）。重量無法光靠眼睛看大小來決定，必須透過感官體驗或工具測量。"
+            },
+            {
+                "question": "天平的左邊放了 1 個大蘋果，右邊放了 2 個小橘子，這時候天平剛好平衡（一樣高）。請問下面哪句話是正確的？",
+                "options": ["1 個大蘋果和 2 個小橘子一樣重", "大蘋果比較重", "一個小橘子比大蘋果重", "橘子比較多所以橘子重"],
+                "answer": 0,
+                "rationale": "天平平衡代表兩邊的總重量相同，所以 1 個大蘋果的重量會等於 2 個小橘子合起來的重量。"
+            },
+            {
+                "question": "承上題，如果把天平右邊的 2 個小橘子拿走 1 個，天平會發生什麼事？",
+                "options": ["保持一樣高", "左邊（大蘋果）沉下去", "右邊（橘子）沉下去", "天平會翻倒"],
+                "answer": 1,
+                "rationale": "拿走右邊的一個橘子後，右邊變輕了，左邊的大蘋果比較重，所以左邊會往下沉。"
+            },
+            {
+                "question": "小華的橡皮擦和 4 個代幣一樣重。小同的橡皮擦和 6 個「一模一樣的代幣」一樣重。誰的橡皮擦比較重？",
+                "options": ["小華的", "小同的", "一樣重", "代幣太輕了不能比"],
+                "answer": 1,
+                "rationale": "小同的橡皮擦需要 6 個代幣才能平衡，小華的只需要 4 個。換算成相同代幣時，數量多的（6個）比較重，所以小同的橡皮擦比較重。"
+            },
+            {
+                "question": "一根香蕉和 5 個積木一樣重，一顆橘子和 4 個積木一樣重。把它們「一起」放在天平的左邊，右邊要放幾個積木才會平衡？",
+                "options": ["1 個積木", "5 個積木", "9 個積木", "10 個積木"],
+                "answer": 2,
+                "rationale": "把香蕉和橘子放在一起，重量就是相加：5 + 4 = 9，所以需要 9 個積木。"
+            },
+            {
+                "question": "小華用「相同的彈珠」來量水果。1 顆草莓和 2 顆彈珠一樣重，1 顆蓮霧和 5 顆彈珠一樣重。請問草莓和蓮霧誰比較輕？",
+                "options": ["草莓比較輕", "蓮霧比較輕", "一樣重", "彈珠比較重"],
+                "answer": 0,
+                "rationale": "草莓只要 2 顆彈珠重，蓮霧要 5 顆。2 比 5 少，代表草莓換到的彈珠比較少，所以草莓比較輕。"
+            },
+            {
+                "question": "小明把 1 個茶杯放左邊，3 個積木放右邊，天平平衡了。接著他在左邊「再加放 1 個一模一樣的茶杯」，右邊要再加幾個積木才能維持平衡？",
+                "options": ["1 個", "2 個", "3 個", "不需要加"],
+                "answer": 2,
+                "rationale": "1 個茶杯等於 3 個積木。左邊多放了 1 個茶杯，右邊當然也要對應多放 3 個積木，天平才會繼續保持平衡喔！"
+            },
+            {
+                "question": "有三件物品，放在天平比對的結果是：【鉛筆盒比課本輕】，【課本比字典輕】。請問這三件物品中，誰最重？",
+                "options": ["鉛筆盒", "課本", "字典", "一樣重"],
+                "answer": 2,
+                "rationale": "鉛筆盒 < 課本，課本 < 字典。由此可知，字典比課本重，課本又比鉛筆盒重，所以最重的是「字典」。"
+            },
+            {
+                "question": "桌上有甲、乙兩個禮物盒。小明想用「直接比較」的方法知道誰重，他應該怎麼做？",
+                "options": ["用尺量兩個盒子的長度", "把甲和乙同時放上天平的兩端看哪邊沉下去", "用數位相機拍照", "數數看盒子有幾個角"],
+                "answer": 1,
+                "rationale": "將兩件物品直接放上工具（天平或蹺蹺板）對比，就是標準的「直接比較」。"
+            },
+            {
+                "question": "小同拿兩個一樣的瓶子，一個裝滿棉花，一個裝滿沙子。他用雙手掂掂看（感官體驗），哪一個瓶子會明顯感覺沉甸甸的？",
+                "options": ["裝滿棉花的瓶子", "裝滿沙子的瓶子", "兩個瓶子一樣重", "用手掂不出來"],
+                "answer": 1,
+                "rationale": "雖然瓶子一樣大、裝得一樣滿，但是沙子本身比棉花重很多，所以裝滿沙子的瓶子拿起來會沉甸甸的。"
+            },
+            {
+                "question": "小明用「一元硬幣」來量筆記本，發現筆記本和 20 個一元硬幣一樣重。如果他改用比較重的「五十元硬幣」來量，秤起來需要的五十元硬幣數量會比 20 個怎麼樣？",
+                "options": ["變多（大於20個）", "變少（少於20個）", "剛好也是 20 個", "變成 0 個"],
+                "answer": 1,
+                "rationale": "個別單位如果變重了（五十元比一元重），那只需要比較少的數量（少於20個）就能達到跟筆記本一樣的重量。單位越重，所需數量越少。"
+            },
+            {
+                "question": "天平左邊放一個皮球，右邊放一隻玩具鴨，結果「右邊（玩具鴨）沉下去了」。請問這代表什麼？",
+                "options": ["皮球比玩具鴨重", "玩具鴨比皮球重", "兩邊一樣重", "皮球太大了"],
+                "answer": 1,
+                "rationale": "在天平上，往下沉的那一邊就是比較重。既然右邊的玩具鴨沉下去，代表玩具鴨比皮球重。"
+            },
+            {
+                "question": "哥哥的鉛筆盒和 12 個積木一樣重。他把一塊橡皮擦拿出來後，剩下的鉛筆盒變成和 10 個積木一樣重。請問這塊橡皮擦和幾個積木一樣重？",
+                "options": ["22 個", "10 個", "12 個", "2 個"],
+                "answer": 3,
+                "rationale": "拿走橡皮擦後少了 2 個積木的重量（12 - 10 = 2），代表橡皮擦和 2 個積木一樣重。"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `第 ${currentQuestionIndex + 1} / ${questions.length} 題`;
+            document.getElementById("question-text").innerText = currentQuestion.question;
+            
+            const optionsBox = document.getElementById("options-box");
+            optionsBox.innerHTML = "";
+            
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.className = "option-btn";
+                button.innerText = option;
+                button.onclick = () => selectOption(index);
+                optionsBox.appendChild(button);
+            });
+            
+            document.getElementById("feedback-text").style.display = "none";
+            document.getElementById("next-button").style.display = "none";
+        }
+
+        function selectOption(selectedIndex) {
+            if (answered) return;
+            answered = true;
+            
+            const currentQuestion = Math.min(currentQuestionIndex, questions.length - 1);
+            const qData = questions[currentQuestion];
+            const buttons = document.getElementsByClassName("option-btn");
+            const feedbackBox = document.getElementById("feedback-text");
+            
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+            
+            if (selectedIndex === qData.answer) {
+                buttons[selectedIndex].classList.add("correct");
+                feedbackBox.className = "feedback-box correct";
+                feedbackBox.innerHTML = `<strong>⭕ 答對了！</strong><br>${qData.rationale}`;
+                score += 5;
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedbackBox.className = "feedback-box wrong";
+                feedbackBox.innerHTML = `<strong>❌ 答錯囉！</strong><br>${qData.rationale}`;
+            }
+            
+            feedbackBox.style.display = "block";
+            document.getElementById("next-button").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "block";
+            document.getElementById("final-score").innerText = `${score} 分`;
+            
+            const evaluationText = document.getElementById("evaluation-text");
+            if (score === 100) {
+                evaluationText.innerText = "太完美了！感官、直接、間接比較你全都搞懂了！💯";
+            } else if (score >= 80) {
+                evaluationText.innerText = "超棒！天平傾斜與積木代換的觀念非常清楚哦！🌟";
+            } else if (score >= 60) {
+                evaluationText.innerText = "及格了！有幾題關於個別單位大小（硬幣）的代換要再想一下。👍";
+            } else {
+                evaluationText.innerText = "再練習一次！記得天平「沉下去」才是比較重喔，加油！💪";
+            }
+        }
+
+        function restartQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            document.getElementById("result-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
