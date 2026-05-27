@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>二下數學測驗 - 第六單元：公尺與公分</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ecfeff; /* 清新舒緩的淺青色底 */
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(6, 182, 212, 0.15);
+            padding: 24px;
+            width: 100%;
+            max-width: 540px;
+            max-height: 96vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        h2 {
+            color: #0e7490;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #cffafe;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .progress {
+            font-size: 0.9em;
+            color: #666;
+            text-align: right;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .question {
+            font-size: 1.15em;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            color: #1f2937;
+            word-break: break-all;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1em;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            outline: none;
+            width: 100%;
+            word-break: break-all;
+        }
+
+        @media (hover: hover) {
+            .option-btn:hover:not([disabled]) {
+                background-color: #ecfeff;
+                border-color: #06b6d4;
+            }
+        }
+
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .feedback-box {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+
+        .feedback-box.correct {
+            background-color: #ecfdf5;
+            border-left: 5px solid #10b981;
+            color: #065f46;
+        }
+
+        .feedback-box.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .next-btn {
+            width: 100%;
+            background-color: #06b6d4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            text-align: center;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .next-btn:hover {
+            background-color: #0891b2;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .score {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #0891b2;
+            margin: 16px 0;
+        }
+
+        .restart-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .restart-btn:hover {
+            background-color: #059669;
+        }
+
+        @media screen and (max-width: 380px) {
+            body { padding: 6px; }
+            .quiz-container { padding: 16px; }
+            h2 { font-size: 1.2em; margin-bottom: 12px; }
+            .question { font-size: 1.05em; margin-bottom: 12px; }
+            .option-btn { padding: 10px 14px; font-size: 0.95em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <h2>第六單元：公尺與公分 測驗</h2>
+            <div class="progress" id="progress-text">第 1 / 20 題</div>
+            <div class="question" id="question-text">題目載入中...</div>
+            <div class="options-container" id="options-box"></div>
+            <div class="feedback-box" id="feedback-text"></div>
+            <button class="next-btn" id="next-button" onclick="nextQuestion()">下一題</button>
+        </div>
+
+        <div id="result-screen" class="result-screen" style="width: 100%;">
+            <h2>測驗結束！</h2>
+            <p style="margin: 8px 0;">你的總分數是：</p>
+            <div class="score" id="final-score">0 分</div>
+            <p id="evaluation-text" style="margin-bottom: 20px; font-weight: bold; color: #555;"></p>
+            <button class="restart-btn" onclick="restartQuiz()">再測驗一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 20題公尺與公分題目資料
+        const questions = [
+            {
+                "question": "我們在學校學到長度單位換算，請問「1 公尺」剛好等於多少「公分」？",
+                "options": ["10 公分", "100 公分", "1000 公分", "1 公分"],
+                "answer": 1,
+                "rationale": "1 公尺的長度剛好等於 100 公分，這是長度變換的基本觀念。"
+            },
+            {
+                "question": "如果要測量「教室黑板的長度」，用下面哪一個單位來記錄會最方便合適？",
+                "options": ["公分", "公斤", "公尺", "個"],
+                "answer": 2,
+                "rationale": "黑板的長度很長，用較大的長度單位「公尺」來量，數字才不會太大。"
+            },
+            {
+                "question": "量量看，你的「數學課本長度」大約用哪一個單位比較剛好？",
+                "options": ["公尺", "公分", "元", "天"],
+                "answer": 1,
+                "rationale": "數學課本長度比 1 公尺短得多，用比較小的長度單位「公分」測量最合適。"
+            },
+            {
+                "question": "小明用尺量出桌子長 2 公尺，請問 2 公尺也就是多少公分？",
+                "options": ["20 公分", "200 公分", "2000 公分", "2 公分"],
+                "answer": 1,
+                "rationale": "1 公尺是 100 公分，2 公尺就是 2 個 100 公分，也就是 200 公分。"
+            },
+            {
+                "question": "美勞課需要一條 300 公分長的緞帶，請問 300 公分換算過後是多少公尺？",
+                "options": ["3 公尺", "30 公尺", "300 公尺", "0 公尺"],
+                "answer": 0,
+                "rationale": "每 100 公分可以換成 1 公尺，300 公分裡面有 3 個 100，所以是 3 公尺。"
+            },
+            {
+                "question": "媽媽的身高是 1 公尺 65 公分，如果全部換成「公分」來表示，是多少公分？",
+                "options": ["105 公分", "165 公分", "651 公分", "1600 公分"],
+                "answer": 1,
+                "rationale": "1 公尺換成 100 公分，再外加原本的 65 公分，合起來就是 165 公分。"
+            },
+            {
+                "question": "妹妹跳遠跳了 120 公分，也可以說妹妹跳了幾公尺幾公分？",
+                "options": ["12 公尺 0 公分", "1 公尺 2 公分", "1 公尺 20 公分", "0 公尺 120 公分"],
+                "answer": 2,
+                "rationale": "120 公分拆開成 100 公分和 20 公分，100 公分可換成 1 公尺，所以是 1 公尺 20 公分。"
+            },
+            {
+                "question": "比較看看：藍繩子長 1 公尺 35 公分，綠繩子長 153 公分。哪一條繩子比較長？",
+                "options": ["藍繩子", "綠繩子", "一樣長", "沒辦法比"],
+                "answer": 1,
+                "rationale": "1 公尺 35 公分等於 135 公分。拿 135 公分與 153 公分做比較，153 公分比較長。"
+            },
+            {
+                "question": "比較看看：甲緞帶長 2 公尺，乙緞帶長 200 公分。哪一條緞帶比較長？",
+                "options": ["甲緞帶", "乙緞帶", "一樣長", "沒辦法比"],
+                "answer": 2,
+                "rationale": "因為 2 公尺剛好等於 200 公分，所以兩條緞帶的長度是一樣長的。"
+            },
+            {
+                "question": "想一想生活中的物品，下面哪一個物品的實際高度大約最接近「2 公尺」？",
+                "options": ["教室門的高度", "彩色筆的長度", "橡皮擦的厚度", "學校大樓的高度"],
+                "answer": 0,
+                "rationale": "一般教室門的高度大約比一個大人再高一點點，大約是 2 公尺最合理。"
+            },
+            {
+                "question": "想一想生活中的物品，下面哪一個物品的實際長度大約最接近「15 公分」？",
+                "options": ["一條新鉛筆的長度", "黑板的長度", "操場跑道一圈的長度", "客廳沙發的長度"],
+                "answer": 0,
+                "rationale": "鉛筆大約跟我們常用的短塑膠尺差不多長，大約是 15 公分左右。"
+            },
+            {
+                "question": "一條紅線長 1 公尺 10 公分，一條藍線長 80 公分。把兩條線接在一起（不計接頭），一共有多長？",
+                "options": ["1 公尺 90 公分", "2 公尺", "1 公尺 80 公分", "90 公分"],
+                "answer": 0,
+                "rationale": "1 公尺 10 公分加上 80 公分，公分和公分相加得到 90 公分，所以總長是 1 公尺 90 公分。"
+            },
+            {
+                "question": "老師的身高是 170 公分，小明的身高是 1 公尺 30 公分。請問老師比小明高多少公分？",
+                "options": ["40 公分", "30 公分", "140 公分", "100 公分"],
+                "answer": 0,
+                "rationale": "小明的身高是 130 公分。用老師的 170 公分減去 130 公分，得到相差 40 公分。"
+            },
+            {
+                "question": "算算看長度減法：5 公尺 － 2 公尺 等於多少？",
+                "options": ["3 公分", "3 公尺", "7 公尺", "300 公尺"],
+                "answer": 1,
+                "rationale": "相同單位可以直接相減，5 減 2 等於 3，因為原本單位是公尺，所以答案是 3 公尺。"
+            },
+            {
+                "question": "木工叔叔把一根 1 公尺 40 公分長的木條，接上一根 50 公分的木條，新木條長多少？",
+                "options": ["1 公尺 90 公分", "2 公尺", "90 公分", "145 公分"],
+                "answer": 0,
+                "rationale": "40 公分加 50 公分是 90 公分，前方原本還有 1 公尺，所以總長是 1 公尺 90 公分。"
+            },
+            {
+                "question": "我們在體育課繞著「操場跑道」跑一圈，通常是用什麼長度單位來計算最合適？",
+                "options": ["公尺", "公分", "格", "步"],
+                "answer": 0,
+                "rationale": "操場跑道一圈很長（常見為 200 或 400 公尺），因此用「公尺」作為標準計量單位最方便。"
+            },
+            {
+                "question": "健康檢查時，身高計上的英文縮寫記作「m」，這代表哪一個數學長度單位？",
+                "options": ["公分", "公尺", "公斤", "公克"],
+                "answer": 1,
+                "rationale": "在長度單位中，英文小寫「m」是公尺（meter）的簡寫。"
+            },
+            {
+                "question": "我們常用的直尺上，常常會印有英文縮寫「cm」，這代表哪一個數學長度單位？",
+                "options": ["公分", "公尺", "公升", "分鐘"],
+                "answer": 0,
+                "rationale": "在長度單位中，英文小寫「cm」是公分（centimeter）的簡寫。"
+            },
+            {
+                "question": "爸爸買了一條 3 公尺長的彩帶，佈置房間用掉了 100 公分，還剩下幾公尺的彩帶？",
+                "options": ["200 公尺", "2 公尺", "1 公尺", "290 公尺"],
+                "answer": 1,
+                "rationale": "用掉的 100 公分換算就是 1 公尺。3 公尺減去 1 公尺，還剩下 2 公尺。"
+            },
+            {
+                "question": "庭院裡的小樹高 2 公尺 10 公分，長頸鹿高 4 公尺 30 公分。長頸鹿比小樹高多少？",
+                "options": ["2 公尺 20 公分", "6 公尺 40 公分", "2 公尺", "20 公分"],
+                "answer": 0,
+                "rationale": "公尺與公分分別相減：4 公尺減 2 公尺得 2 公尺；30 公分減 10 公分得 20 公分，故高出 2 公尺 20 公分。"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `第 ${currentQuestionIndex + 1} / ${questions.length} 題`;
+            document.getElementById("question-text").innerText = currentQuestion.question;
+            
+            const optionsBox = document.getElementById("options-box");
+            optionsBox.innerHTML = "";
+            
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.className = "option-btn";
+                button.innerText = option;
+                button.onclick = () => selectOption(index);
+                optionsBox.appendChild(button);
+            });
+            
+            document.getElementById("feedback-text").style.display = "none";
+            document.getElementById("next-button").style.display = "none";
+        }
+
+        function selectOption(selectedIndex) {
+            if (answered) return;
+            answered = true;
+            
+            const currentQuestion = Math.min(currentQuestionIndex, questions.length - 1);
+            const qData = questions[currentQuestion];
+            const buttons = document.getElementsByClassName("option-btn");
+            const feedbackBox = document.getElementById("feedback-text");
+            
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+            
+            if (selectedIndex === qData.answer) {
+                buttons[selectedIndex].classList.add("correct");
+                feedbackBox.className = "feedback-box correct";
+                feedbackBox.innerHTML = `<strong>⭕ 答對了！觀念很正確喔！</strong><br>${qData.rationale}`;
+                score += 5;
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedbackBox.className = "feedback-box wrong";
+                feedbackBox.innerHTML = `<strong>❌ 答錯囉！再看一次解析：</strong><br>${qData.rationale}`;
+            }
+            
+            feedbackBox.style.display = "block";
+            document.getElementById("next-button").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "block";
+            document.getElementById("final-score").innerText = `${score} 分`;
+            
+            const evaluationText = document.getElementById("evaluation-text");
+            if (score === 100) {
+                evaluationText.innerText = "太神了！100分！你對公尺和公分的換算與長度感掌握得無懈可擊！💯";
+            } else if (score >= 80) {
+                evaluationText.innerText = "表現非常優秀！單位的加減和大小比較都難不倒你，好棒！🌟";
+            } else if (score >= 60) {
+                evaluationText.innerText = "順利及格！提醒你換算時要牢記「1 公尺 = 100 公分」喔，多加油！👍";
+            } else {
+                evaluationText.innerText = "沒關係，再接再厲！拿出一把 15 公分的直尺和 1 公尺的捲尺摸摸看，會更懂長度喔！💪";
+            }
+        }
+
+        function restartQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            document.getElementById("result-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
