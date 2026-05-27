@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>二下數學測驗 - 第七單元：乘與加減兩步驟</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f5f3ff; /* 柔和淡紫色底 */
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(147, 51, 234, 0.15);
+            padding: 24px;
+            width: 100%;
+            max-width: 540px;
+            max-height: 96vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        h2 {
+            color: #6b21a8;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #e9d5ff;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .progress {
+            font-size: 0.9em;
+            color: #6b7280;
+            text-align: right;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .question {
+            font-size: 1.15em;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            color: #1f2937;
+            word-break: break-all;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1em;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            outline: none;
+            width: 100%;
+            word-break: break-all;
+        }
+
+        @media (hover: hover) {
+            .option-btn:hover:not([disabled]) {
+                background-color: #faf5ff;
+                border-color: #9333ea;
+            }
+        }
+
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .feedback-box {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+
+        .feedback-box.correct {
+            background-color: #ecfdf5;
+            border-left: 5px solid #10b981;
+            color: #065f46;
+        }
+
+        .feedback-box.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .next-btn {
+            width: 100%;
+            background-color: #9333ea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            text-align: center;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .next-btn:hover {
+            background-color: #7e22ce;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .score {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #9333ea;
+            margin: 16px 0;
+        }
+
+        .restart-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .restart-btn:hover {
+            background-color: #059669;
+        }
+
+        @media screen and (max-width: 380px) {
+            body { padding: 6px; }
+            .quiz-container { padding: 16px; }
+            h2 { font-size: 1.2em; margin-bottom: 12px; }
+            .question { font-size: 1.05em; margin-bottom: 12px; }
+            .option-btn { padding: 10px 14px; font-size: 0.95em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <h2>第七單元：乘與加減兩步驟</h2>
+            <div class="progress" id="progress-text">第 1 / 20 題</div>
+            <div class="question" id="question-text">題目載入中...</div>
+            <div class="options-container" id="options-box"></div>
+            <div class="feedback-box" id="feedback-text"></div>
+            <button class="next-btn" id="next-button" onclick="nextQuestion()">下一題</button>
+        </div>
+
+        <div id="result-screen" class="result-screen" style="width: 100%;">
+            <h2>測驗結束！</h2>
+            <p style="margin: 8px 0;">你的總分數是：</p>
+            <div class="score" id="final-score">0 分</div>
+            <p id="evaluation-text" style="margin-bottom: 20px; font-weight: bold; color: #555;"></p>
+            <button class="restart-btn" onclick="restartQuiz()">再測驗一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 20題乘與加減兩步驟題目資料
+        const questions = [
+            // 先乘後加
+            {
+                "question": "小明買了 3 包餅乾，每包賣 8 元，他又買了一個 15 元的麵包。小明一共要付幾元？",
+                "options": ["26 元", "39 元", "47 元", "31 元"],
+                "answer": 1,
+                "rationale": "【先乘後加】先算餅乾的價錢 8 × 3 = 24，再加上麵包的 15 元，得到 24 + 15 = 39 元。"
+            },
+            {
+                "question": "媽媽買了 4 盒雞蛋，每盒裝有 6 顆。家裡原本還有 5 顆雞蛋，請問現在家裡一共有幾顆雞蛋？",
+                "options": ["34 顆", "15 顆", "24 顆", "29 顆"],
+                "answer": 3,
+                "rationale": "【先乘後加】先算買來的雞蛋 6 × 4 = 24 顆，再加上原本的 5 顆，得到 24 + 5 = 29 顆。"
+            },
+            {
+                "question": "餐廳裡每桌可以坐 5 個人，現在有 4 桌坐滿了人。後來又進來了 7 個客人，請問餐廳裡現在共有幾人？",
+                "options": ["20 人", "27 人", "32 人", "16 人"],
+                "answer": 1,
+                "rationale": "【先乘後加】先算原本坐滿的人數 5 × 4 = 20 人，加上新來的 7 人，得到 20 + 7 = 27 人。"
+            },
+            {
+                "question": "小華每天存 10 元，存了 5 天。他的存錢筒裡原本就有 20 元，請問現在存錢筒裡共有幾元？",
+                "options": ["70 元", "60 元", "50 元", "80 元"],
+                "answer": 0,
+                "rationale": "【先乘後加】先算存進去的錢 10 × 5 = 50 元，加上原本的 20 元，得到 50 + 20 = 70 元。"
+            },
+            {
+                "question": "鉛筆一盒有 6 枝，老師買了 3 盒，老闆又多送了 2 枝給老師。請問老師一共拿到幾枝鉛筆？",
+                "options": ["18 枝", "11 枝", "20 枝", "24 枝"],
+                "answer": 2,
+                "rationale": "【先乘後加】先算買來的鉛筆 6 × 3 = 18 枝，再加上老闆送的 2 枝，得到 18 + 2 = 20 枝。"
+            },
+            // 先乘後減
+            {
+                "question": "一條巧克力賣 9 元，姐姐買了 5 條，付給老闆 50 元，請問可以找回多少元？",
+                "options": ["15 元", "45 元", "10 元", "5 元"],
+                "answer": 3,
+                "rationale": "【先乘後減】先算巧克力共 9 × 5 = 45 元，再用 50 元去減，得到 50 - 45 = 5 元。"
+            },
+            {
+                "question": "桌上有 6 盒月餅，每盒裝了 4 個。全家人一起吃掉了 8 個，請問還剩下幾個月餅？",
+                "options": ["16 個", "24 個", "8 個", "32 個"],
+                "answer": 0,
+                "rationale": "【先乘後減】先算原本共有 4 × 6 = 24 個，減掉吃掉的 8 個，得到 24 - 8 = 16 個。"
+            },
+            {
+                "question": "小美每天摺 7 隻紙鶴，她連續摺了 3 天。後來她送給好朋友 10 隻紙鶴，請問她還剩下幾隻紙鶴？",
+                "options": ["14 隻", "21 隻", "11 隻", "31 隻"],
+                "answer": 2,
+                "rationale": "【先乘後減】先算一共摺了 7 × 3 = 21 隻，減去送人的 10 隻，得到 21 - 10 = 11 隻。"
+            },
+            {
+                "question": "電影院裡有 8 排座位，每排有 9 個位子。因為冷氣漏水，其中有 5 個位子壞掉不能坐，請問剩下幾個好的位子？",
+                "options": ["60 個", "67 個", "72 個", "77 個"],
+                "answer": 1,
+                "rationale": "【先乘後減】先算全部位子有 9 × 8 = 72 個，扣除壞掉的 5 個，得到 72 - 5 = 67 個。"
+            },
+            {
+                "question": "哥哥買了 7 包糖果，每包裡面有 8 顆。哥哥拿了 15 顆分給妹妹，請問哥哥自己還剩下幾顆糖果？",
+                "options": ["41 顆", "56 顆", "31 顆", "71 顆"],
+                "answer": 0,
+                "rationale": "【先乘後減】先算原本總共有 8 × 7 = 56 顆糖果，減掉給妹妹的 15 顆，得到 56 - 15 = 41 顆。"
+            },
+            // 先加後乘
+            {
+                "question": "果農把 3 顆紅蘋果和 4 顆青蘋果裝成一籃。媽媽買了 5 籃這樣的水果，請問共有幾顆蘋果？",
+                "options": ["35 顆", "15 顆", "20 顆", "12 顆"],
+                "answer": 0,
+                "rationale": "【先加後乘】先算一籃裡有 3 + 4 = 7 顆蘋果，買了 5 籃就是 7 × 5 = 35 顆蘋果。"
+            },
+            {
+                "question": "糖果店將 5 顆黑巧克力和 4 顆白巧克力裝成一盒。爸爸買了 6 盒，請問一共有幾顆巧克力？",
+                "options": ["30 顆", "54 顆", "24 顆", "9 顆"],
+                "answer": 1,
+                "rationale": "【先加後乘】先算一盒共有 5 + 4 = 9 顆，買了 6 盒就是 9 × 6 = 54 顆巧克力。"
+            },
+            {
+                "question": "每間教室裡都擺了長桌 3 張和方桌 2 張。請問學校裡 4 間這樣的教室，一共擺了幾張桌子？",
+                "options": ["12 張", "8 張", "5 張", "20 張"],
+                "answer": 3,
+                "rationale": "【先加後乘】先算一間教室有 3 + 2 = 5 張桌子，4 間教室就是 5 × 4 = 20 張桌子。"
+            },
+            {
+                "question": "小英早上看了 4 頁故事書，下午看了 5 頁。她這樣每天看，看了 7 天後，一共看了幾頁故事書？",
+                "options": ["28 頁", "35 頁", "63 頁", "9 頁"],
+                "answer": 2,
+                "rationale": "【先加後乘】先算一天共看了 4 + 5 = 9 頁，看了 7 天就是 9 × 7 = 63 頁。"
+            },
+            {
+                "question": "做一個漂亮的花圈需要 6 朵紅花和 4 朵黃花。美勞課要全組一起做 3 個花圈，一共需要準備幾朵花？",
+                "options": ["18 朵", "30 朵", "12 朵", "10 朵"],
+                "answer": 1,
+                "rationale": "【先加後乘】先算做一個花圈需要 6 + 4 = 10 朵花，做 3 個就是 10 × 3 = 30 朵花。"
+            },
+            // 先減後乘
+            {
+                "question": "一盒雞蛋原本有 10 顆，運送時每盒都不小心破了 2 顆。超市進貨了 4 盒這樣的雞蛋，請問共有幾顆是完好沒破的？",
+                "options": ["40 顆", "8 顆", "32 顆", "24 顆"],
+                "answer": 2,
+                "rationale": "【先減後乘】先算每盒剩下 10 - 2 = 8 顆完好的，4 盒就是 8 × 4 = 32 顆。"
+            },
+            {
+                "question": "麵包店的布丁定價是 15 元，今天特價每個便宜 6 元。小明買了 4 個特價的布丁，一共要花多少元？",
+                "options": ["36 元", "60 元", "24 元", "9 元"],
+                "answer": 0,
+                "rationale": "【先減後乘】先算出特價後的布丁一個是 15 - 6 = 9 元，買 4 個需要 9 × 4 = 36 元。"
+            },
+            {
+                "question": "一張貼紙簿原本有 8 頁，因為瑕疵被廠商撕掉了 2 頁。小華買了 6 本這樣的貼紙簿，請問一共能拿到幾頁？",
+                "options": ["48 頁", "12 頁", "6 頁", "36 頁"],
+                "answer": 3,
+                "rationale": "【先減後乘】先算一本貼紙簿剩下 8 - 2 = 6 頁，買了 6 本就是 6 × 6 = 36 頁。"
+            },
+            {
+                "question": "遊樂園的門票一張原本 20 元，只要用折價券，每張票都可以減免 12 元。老師買了 8 張打折後的門票，一共要花幾元？",
+                "options": ["64 元", "160 元", "96 元", "8 元"],
+                "answer": 0,
+                "rationale": "【先減後乘】先算打折後的票價一張是 20 - 12 = 8 元，買 8 張就是 8 × 8 = 64 元。"
+            },
+            {
+                "question": "媽媽每次烤 11 個餅乾，但總會有 4 個不小心烤焦不能吃。如果這 5 天媽媽每天都烤一次，她總共成功烤出了幾個好吃的餅乾？",
+                "options": ["55 個", "20 個", "35 個", "7 個"],
+                "answer": 2,
+                "rationale": "【先減後乘】先算每天能成功烤出 11 - 4 = 7 個好吃的，連續 5 天就是 7 × 5 = 35 個。"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `第 ${currentQuestionIndex + 1} / ${questions.length} 題`;
+            document.getElementById("question-text").innerText = currentQuestion.question;
+            
+            const optionsBox = document.getElementById("options-box");
+            optionsBox.innerHTML = "";
+            
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.className = "option-btn";
+                button.innerText = option;
+                button.onclick = () => selectOption(index);
+                optionsBox.appendChild(button);
+            });
+            
+            document.getElementById("feedback-text").style.display = "none";
+            document.getElementById("next-button").style.display = "none";
+        }
+
+        function selectOption(selectedIndex) {
+            if (answered) return;
+            answered = true;
+            
+            const currentQuestion = Math.min(currentQuestionIndex, questions.length - 1);
+            const qData = questions[currentQuestion];
+            const buttons = document.getElementsByClassName("option-btn");
+            const feedbackBox = document.getElementById("feedback-text");
+            
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+            
+            if (selectedIndex === qData.answer) {
+                buttons[selectedIndex].classList.add("correct");
+                feedbackBox.className = "feedback-box correct";
+                feedbackBox.innerHTML = `<strong>⭕ 答對了！邏輯很清晰！</strong><br>${qData.rationale}`;
+                score += 5;
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedbackBox.className = "feedback-box wrong";
+                feedbackBox.innerHTML = `<strong>❌ 哎呀，答錯囉！請看解析：</strong><br>${qData.rationale}`;
+            }
+            
+            feedbackBox.style.display = "block";
+            document.getElementById("next-button").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "block";
+            document.getElementById("final-score").innerText = `${score} 分`;
+            
+            const evaluationText = document.getElementById("evaluation-text");
+            if (score === 100) {
+                evaluationText.innerText = "完美滿分！「先乘後加/減」跟「先加/減後乘」的邏輯你已經完全掌握了！💯";
+            } else if (score >= 80) {
+                evaluationText.innerText = "表現非常棒！大部分的兩步驟應用題都難不倒你喔！🌟";
+            } else if (score >= 60) {
+                evaluationText.innerText = "順利及格！解題時可以試著先在紙上畫畫看題目在說什麼，會更容易算對喔。👍";
+            } else {
+                evaluationText.innerText = "別灰心！兩步驟的題目本來就比較複雜，再慢慢讀一次題目，找出「先算什麼、再算什麼」就沒問題了！💪";
+            }
+        }
+
+        function restartQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            document.getElementById("result-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
