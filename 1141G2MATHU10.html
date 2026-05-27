@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>二上數學測驗 - 第十單元：面的大小比較</title>
+    <style>
+        /* 全域邊距修正，防止元件被撐開 */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #e6f4ea; /* 舒適的淺綠色底色 */
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        /* 核心主外框：隨螢幕自適應寬度 */
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            width: 100%;
+            max-width: 540px;
+            max-height: 96vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        h2 {
+            color: #137333;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #a8dab5;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .progress {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            text-align: right;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .question {
+            font-size: 1.15em;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            color: #2c3e50;
+            word-break: break-all;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1em;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            outline: none;
+            width: 100%;
+            word-break: break-all;
+        }
+
+        @media (hover: hover) {
+            .option-btn:hover:not([disabled]) {
+                background-color: #f4fbf7;
+                border-color: #81c995;
+            }
+        }
+
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .feedback-box {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+
+        .feedback-box.correct {
+            background-color: #ecfdf5;
+            border-left: 5px solid #10b981;
+            color: #065f46;
+        }
+
+        .feedback-box.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .next-btn {
+            width: 100%;
+            background-color: #34a853;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            text-align: center;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .next-btn:hover {
+            background-color: #2b8a44;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .score {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #34a853;
+            margin: 16px 0;
+        }
+
+        .restart-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .restart-btn:hover {
+            background-color: #059669;
+        }
+
+        @media screen and (max-width: 380px) {
+            body { padding: 6px; }
+            .quiz-container { padding: 16px; }
+            h2 { font-size: 1.2em; margin-bottom: 12px; }
+            .question { font-size: 1.05em; margin-bottom: 12px; }
+            .option-btn { padding: 10px 14px; font-size: 0.95em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <h2>第十單元：面的大小比較 測驗</h2>
+            <div class="progress" id="progress-text">第 1 / 20 題</div>
+            <div class="question" id="question-text">題目載入中...</div>
+            <div class="options-container" id="options-box"></div>
+            <div class="feedback-box" id="feedback-text"></div>
+            <button class="next-btn" id="next-button" onclick="nextQuestion()">下一題</button>
+        </div>
+
+        <div id="result-screen" class="result-screen" style="width: 100%;">
+            <h2>測驗結束！</h2>
+            <p style="margin: 8px 0;">你的總分數是：</p>
+            <div class="score" id="final-score">0 分</div>
+            <p id="evaluation-text" style="margin-bottom: 20px; font-weight: bold; color: #555;"></p>
+            <button class="restart-btn" onclick="restartQuiz()">再測驗一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 20題面的大小比較單元題目資料庫
+        const questions = [
+            {
+                "question": "數學課學到的「面」，指的是物品的哪一個部分？",
+                "options": ["摸起來平平或有表面覆蓋的地方", "物品拿起來有多重", "物品裡面的空間", "物品邊邊的一條線"],
+                "answer": 0,
+                "rationale": "「面」是指物體的外表。例如：桌面、課本封面。邊邊的線是長度，拿起來多重是重量。"
+            },
+            {
+                "question": "小明把數學課本和英文課本疊在一起，發現數學課本把英文課本「完全遮住了」，而且還多出一塊。請問哪一個課本的面比較大？",
+                "options": ["英文課本", "數學課本", "一樣大", "沒辦法比"],
+                "answer": 1,
+                "rationale": "重疊比較時，能把對方完全蓋住還多出來的圖形，代表它的面比較大。"
+            },
+            {
+                "question": "小華拿一張正方形紅紙和一張長方形藍紙。他把紅紙疊在藍紙上面，結果藍紙有些地方露在外面，紅紙也有地方露在外面。請問小華接下來應該怎麼比比較好？",
+                "options": ["直接用眼睛猜", "把紅紙旋轉或剪開來鋪滿試試看", "覺得露出來一樣多就是一樣大", "放棄不比了"],
+                "answer": 1,
+                "rationale": "當重疊時互有超出，無法直接一眼看出時，可以透過旋轉、甚至剪開不重疊地鋪鋪看，這叫作剪貼或間接比較。"
+            },
+            {
+                "question": "用眼睛看教室裡的「黑板的面」和「同學的墊板的面」，哪一個明顯大得多？",
+                "options": ["黑板的面", "墊板的面", "一樣大", "眼睛看不出來"],
+                "answer": 0,
+                "rationale": "兩者大小相差很多時，我們可以直接用眼睛觀察，這叫作「視覺比較」。黑板明顯大很多。"
+            },
+            {
+                "question": "有一張黃色的色紙，小明把它「轉了一個方向」放在桌上。請問這張色紙的面有變大或變小嗎？",
+                "options": ["變大了", "變小了", "沒有變，還是一樣大", "不一定"],
+                "answer": 2,
+                "rationale": "物品只是改變擺放的方向或位置，它「面的大小」是不會改變的。"
+            },
+            {
+                "question": "媽媽的手掌印和就讀二年級的小明的手掌印，哪一個印出來的面會比較大？",
+                "options": ["小明的手掌印", "媽媽的手掌印", "一樣大", "要看誰的指甲長"],
+                "answer": 1,
+                "rationale": "大人的手通常比二年級小朋友的手大，所以媽媽手掌印出來的面會比較大。"
+            },
+            {
+                "question": "如果要比較甲、乙兩張桌子的桌面大小，可以用下面哪一種方法來準確比較？",
+                "options": ["拿一根繩子量桌子的長度", "用一模一樣的正方形卡片，不重疊地排滿桌面數數看", "看哪一張桌子比較高", "看哪一張桌子比較重"],
+                "answer": 1,
+                "rationale": "要比較「面」的大小，可以用相同的圖卡鋪滿它，看誰用的圖卡比較多。量繩子是比長度，比高矮是比高度。"
+            },
+            {
+                "question": "承上題，甲桌面排滿了 12 張卡片，乙桌面排滿了 15 張卡片（卡片都一樣大）。哪一個桌面比較大？",
+                "options": ["甲桌面", "乙桌面", "一樣大", "沒辦法比"],
+                "answer": 1,
+                "rationale": "使用的卡片一樣大時，排了 15 張的乙桌面比排了 12 張的甲桌面大。"
+            },
+            {
+                "question": "小華和小同想比比看誰的筆記本封面比較大。小華用了 6 張「大貼紙」貼滿，小同用了 6 張「小貼紙」貼滿。誰的筆記本封面比較大？",
+                "options": ["小華的", "小同的", "一樣大", "因為貼紙不一樣大，所以沒辦法這樣比"],
+                "answer": 0,
+                "rationale": "雖然都是 6 張，但是小華用的是「大貼紙」，大貼紙的面比較大，所以小華的筆記本封面比較大。"
+            },
+            {
+                "question": "為什麼我們在用「數格子」的方法來比較兩個面的大小時，格子一定要「一模一樣大」？",
+                "options": ["因為這樣才公平、才能準確比較", "因為好玩", "因為圖案比較漂亮", "因為老師規定的"],
+                "answer": 0,
+                "rationale": "在數學上，使用個別單位進行間接比較時，單位（格子）必須完全相同，數出來的數量才能互相比較。"
+            },
+            {
+                "question": "在同一張方格紙上，圖形甲佔了 8 個格子，圖形乙佔了 6 個格子。哪一個圖形的面比較大？",
+                "options": ["圖形甲", "圖形乙", "一樣大", "要看格子的形狀"],
+                "answer": 0,
+                "rationale": "在同一個方格紙上，格子大小都一樣。8 個格子比 6 個格子多，所以圖形甲的面比較大。"
+            },
+            {
+                "question": "圖形 A 在方格紙上佔了 5 個格子，圖形 B 是一個長得很奇怪的圖形，但也佔了 5 個格子。請問這兩個圖形的面哪一個大？",
+                "options": ["圖形 A 大", "圖形 B 大", "一樣大", "形狀不同就無法比較"],
+                "answer": 2,
+                "rationale": "只要格子是一樣大的，就算形狀長得不一樣，只要佔的格子數量相同（都是 5 格），面的大小就是一樣大。"
+            },
+            {
+                "question": "一個面紙盒有好多個面。請問面紙盒「上面的面」和「側邊的面」，哪一個比較大？",
+                "options": ["上面的面", "側邊的面", "一樣大", "要用秤子秤"],
+                "answer": 0,
+                "rationale": "面紙盒是立體的，不同位置的面大小可能不相同。抽面紙的那一個面（上面的面）明顯比側邊還要大。"
+            },
+            {
+                "question": "把一張很大的正方形色紙從中間「剪成兩半」，再拼成一個三角形。請問拼完後，面的總大小有改變嗎？",
+                "options": ["變大了", "變小了", "沒有變，還是一樣大", "剪開後就沒有面了"],
+                "answer": 2,
+                "rationale": "把圖形剪開再重新拼湊，沒有丟掉也沒有增加，它「面的總大小」依然保持不變。"
+            },
+            {
+                "question": "小明拿一張明信片和一個大信封。他把明信片完全放進大信封裡面，而且信封還有很多空間。這代表什麼？",
+                "options": ["明信片的面比信封大", "明信片的面比信封小", "兩個人的面一樣大", "信封比較重"],
+                "answer": 1,
+                "rationale": "明信片可以完全塞進信封且信封沒滿，代表明信片的面比信封還要小。"
+            },
+            {
+                "question": "下面哪一個東西，它的表面是「平平的面（平面）」？",
+                "options": ["籃球的表面", "墊板的表面", "蘋果的表面", "棒球的表面"],
+                "answer": 1,
+                "rationale": "籃球、蘋果、棒球的表面都是彎彎的（彎曲面）；只有墊板的表面是平平的（平面）。"
+            },
+            {
+                "question": "在方格紙上，紅色的三角形佔了 4 個格子，藍色的正方形也佔了 4 個格子。哪一個圖形的面比較小？",
+                "options": ["紅色三角形", "藍色正方形", "一樣大（沒有誰比較小）", "三角形看起來比較尖，所以比較小"],
+                "answer": 2,
+                "rationale": "兩者都佔了 4 個格子，代表它們面的大小完全一樣大，所以沒有誰比較小。"
+            },
+            {
+                "question": "樹葉 A 在格子紙上蓋住了 9 個格子，樹葉 B 蓋住了 7 個格子。樹葉 A 比樹葉 B 多蓋了幾個格子？面的大小相差多少？",
+                "options": ["2 個格子", "7 個格子", "9 個格子", "16 個格子"],
+                "answer": 0,
+                "rationale": "用減法計算相差的格子：9 － 7 ＝ 2 個格子。所以樹葉 A 比樹葉 B 多了 2 個格子的面。"
+            },
+            {
+                "question": "我們能不能拿「一條長 10 公分的繩子」和「一張數學課本的封面」來比較誰的「面」比較大？",
+                "options": ["可以，繩子比較大", "可以，課本比較大", "不能比，因為繩子只有細細的線，沒有平平的面", "只要疊在一起就可以比"],
+                "answer": 2,
+                "rationale": "繩子只有一條線（長度），它沒有寬度，所以沒有「面」；課本封面是一個面。兩者是不同的概念，不能比較面的大小。"
+            },
+            {
+                "question": "教室的「門的面」和「窗戶的面」，通常哪一個面比較大？",
+                "options": ["門的面", "窗戶的面", "一樣大", "看是誰在看"],
+                "answer": 0,
+                "rationale": "教室的門為了讓大家進出，通常會做得比一般的單扇窗戶還要大，所以門的面比較大。"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `第 ${currentQuestionIndex + 1} / ${questions.length} 題`;
+            document.getElementById("question-text").innerText = currentQuestion.question;
+            
+            const optionsBox = document.getElementById("options-box");
+            optionsBox.innerHTML = "";
+            
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.className = "option-btn";
+                button.innerText = option;
+                button.onclick = () => selectOption(index);
+                optionsBox.appendChild(button);
+            });
+            
+            document.getElementById("feedback-text").style.display = "none";
+            document.getElementById("next-button").style.display = "none";
+        }
+
+        function selectOption(selectedIndex) {
+            if (answered) return;
+            answered = true;
+            
+            const currentQuestion = Math.min(currentQuestionIndex, questions.length - 1);
+            const qData = questions[currentQuestion];
+            const buttons = document.getElementsByClassName("option-btn");
+            const feedbackBox = document.getElementById("feedback-text");
+            
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+            
+            if (selectedIndex === qData.answer) {
+                buttons[selectedIndex].classList.add("correct");
+                feedbackBox.className = "feedback-box correct";
+                feedbackBox.innerHTML = `<strong>⭕ 答對了！</strong><br>${qData.rationale}`;
+                score += 5;
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedbackBox.className = "feedback-box wrong";
+                feedbackBox.innerHTML = `<strong>❌ 答錯囉！</strong><br>${qData.rationale}`;
+            }
+            
+            feedbackBox.style.display = "block";
+            document.getElementById("next-button").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "block";
+            document.getElementById("final-score").innerText = `${score} 分`;
+            
+            const evaluationText = document.getElementById("evaluation-text");
+            if (score === 100) {
+                evaluationText.innerText = "太厲害了！你是圖形與空間小達人，全部答對！💯";
+            } else if (score >= 80) {
+                evaluationText.innerText = "做得好！你對圖形「面」的大小概念抓得很精準喔！🌟";
+            } else if (score >= 60) {
+                evaluationText.innerText = "及格囉！有幾題關於貼紙或格子的題目要再細心一點。👍";
+            } else {
+                evaluationText.innerText = "再加把勁！多練習重疊與數格子的方法，你一定會進步！💪";
+            }
+        }
+
+        function restartQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            document.getElementById("result-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
