@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>二下數學測驗 - 第八單元：年、月、日</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fffbeb; /* 溫暖的淺琥珀色底 */
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(217, 119, 6, 0.15);
+            padding: 24px;
+            width: 100%;
+            max-width: 540px;
+            max-height: 96vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        h2 {
+            color: #b45309;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #fef3c7;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .progress {
+            font-size: 0.9em;
+            color: #6b7280;
+            text-align: right;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .question {
+            font-size: 1.15em;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            color: #1f2937;
+            word-break: break-all;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 1em;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            outline: none;
+            width: 100%;
+            word-break: break-all;
+        }
+
+        @media (hover: hover) {
+            .option-btn:hover:not([disabled]) {
+                background-color: #fffbeb;
+                border-color: #f59e0b;
+            }
+        }
+
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .feedback-box {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+
+        .feedback-box.correct {
+            background-color: #ecfdf5;
+            border-left: 5px solid #10b981;
+            color: #065f46;
+        }
+
+        .feedback-box.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .next-btn {
+            width: 100%;
+            background-color: #d97706;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            text-align: center;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .next-btn:hover {
+            background-color: #b45309;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .score {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #d97706;
+            margin: 16px 0;
+        }
+
+        .restart-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .restart-btn:hover {
+            background-color: #059669;
+        }
+
+        @media screen and (max-width: 380px) {
+            body { padding: 6px; }
+            .quiz-container { padding: 16px; }
+            h2 { font-size: 1.2em; margin-bottom: 12px; }
+            .question { font-size: 1.05em; margin-bottom: 12px; }
+            .option-btn { padding: 10px 14px; font-size: 0.95em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <h2>第八單元：年、月、日 測驗</h2>
+            <div class="progress" id="progress-text">第 1 / 20 題</div>
+            <div class="question" id="question-text">題目載入中...</div>
+            <div class="options-container" id="options-box"></div>
+            <div class="feedback-box" id="feedback-text"></div>
+            <button class="next-btn" id="next-button" onclick="nextQuestion()">下一題</button>
+        </div>
+
+        <div id="result-screen" class="result-screen" style="width: 100%;">
+            <h2>測驗結束！</h2>
+            <p style="margin: 8px 0;">你的總分數是：</p>
+            <div class="score" id="final-score">0 分</div>
+            <p id="evaluation-text" style="margin-bottom: 20px; font-weight: bold; color: #555;"></p>
+            <button class="restart-btn" onclick="restartQuiz()">再測驗一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 20題年、月、日題目資料
+        const questions = [
+            {
+                "question": "我們常說一年四季，請問「一年」固定一共有幾個月？",
+                "options": ["10 個月", "12 個月", "7 個月", "31 個月"],
+                "answer": 1,
+                "rationale": "一年不論平年或閏年，都固定包含了12個月（從1月到12月）。"
+            },
+            {
+                "question": "每個月的天數不一定相同，下面哪一個月份是「大月」，也就是有 31 天？",
+                "options": ["4 月", "6 月", "7 月", "9 月"],
+                "answer": 2,
+                "rationale": "1、3、5、7、8、10、12月是大月，各有31天。所以7月是大月。"
+            },
+            {
+                "question": "下面哪一個月份是「小月」，也就是剛好只有 30 天？",
+                "options": ["1 月", "3 月", "5 月", "11 月"],
+                "answer": 3,
+                "rationale": "4、6、9、11月是小月，各有30天。所以11月是小月。"
+            },
+            {
+                "question": "二月的天數最特別。請問在「平年」的時候，二月一共有幾天？",
+                "options": ["28 天", "29 天", "30 天", "31 天"],
+                "answer": 0,
+                "rationale": "平年的二月比較短，只有 28 天；閏年的二月才會有 29 天。"
+            },
+            {
+                "question": "當二月有 29 天的那一年我們叫做「閏年」，請問閏年這一年一共有幾天？",
+                "options": ["360 天", "365 天", "366 天", "350 天"],
+                "answer": 2,
+                "rationale": "平年一年有 365 天。閏年的二月多出 1 天（29天），所以整年是 365 + 1 = 366 天。"
+            },
+            {
+                "question": "如果今年是「平年」，二月只有 28 天，那今年一整年一共有幾天？",
+                "options": ["365 天", "366 天", "300 天", "364 天"],
+                "answer": 0,
+                "rationale": "平年的一年總天數是 365 天，這是最常見的一年天數。"
+            },
+            {
+                "question": "在一年當中，有連續兩個月份都是 31 天的大月（剛好是放暑假的時候），是哪兩個月？",
+                "options": ["1月和2月", "4月和5月", "7月和8月", "11月和12月"],
+                "answer": 2,
+                "rationale": "7月和8月非常特殊，它們是整年中唯一相鄰、且都是31天大月的月份。"
+            },
+            {
+                "question": "我們每週都要上學和放假。請問「一個星期」固定一共有幾天？",
+                "options": ["5 天", "6 天", "7 天", "30 天"],
+                "answer": 2,
+                "rationale": "一個星期包含星期一到星期日，固定一共有 7 天。"
+            },
+            {
+                "question": "7 月的最後一天是 7 月 31 日。請問隔天（下一個月的第一天）是幾月幾日？",
+                "options": ["7 月 32 日", "8 月 1 日", "8 月 0 日", "9 月 1 日"],
+                "answer": 1,
+                "rationale": "7月過完之後下一個月就是8月，大月的最後一天是31日，所以隔天就是8月1日。"
+            },
+            {
+                "question": "今天是 5 月 30 日星期一，明天是 5 月 31 日，那「後天」會是幾月幾日？",
+                "options": ["5 月 32 日", "6 月 1 日", "6 月 2 日", "5 月 31 日"],
+                "answer": 1,
+                "rationale": "5月是大月有31天。今天是30日，明天是31日（5月最後一天），後天就是新月份的第一天，即6月1日。"
+            },
+            {
+                "question": "小明從 10 月 1 日到 10 月 7 日每天都去外婆家，他一共去了幾天？也就是幾個星期？",
+                "options": ["5 天，半個星期", "6 天，不到一星期", "7 天，剛好1個星期", "8 天，1個星期多"],
+                "answer": 2,
+                "rationale": "從1日到7日共有7天（7-1+1=7），而7天剛好就是1個星期。"
+            },
+            {
+                "question": "算算看，如果時間過了「2 個星期」，一共有幾天？",
+                "options": ["12 天", "14 天", "10 天", "20 天"],
+                "answer": 1,
+                "rationale": "一個星期有 7 天，2 個星期就是 7 × 2 = 14 天。"
+            },
+            {
+                "question": "爸爸出差去了「3 個星期又 2 天」，請問爸爸一共出差了幾天？",
+                "options": ["21 天", "23 天", "25 天", "32 天"],
+                "answer": 1,
+                "rationale": "3個星期是 7 × 3 = 21 天，再加上多出來的 2 天，得到 21 + 2 = 23 天。"
+            },
+            {
+                "question": "學校舉辦科學週，從 3 月 5 日開始到 3 月 11 日結束（頭尾兩天都算），科學週一共舉辦了幾天？",
+                "options": ["6 天", "7 天", "8 天", "5 天"],
+                "answer": 1,
+                "rationale": "日期相減再加1：11 - 5 + 1 = 7天。也可以用手指從5日數到11日，共7天。"
+            },
+            {
+                "question": "媽媽訂購的水果會在 4 月的「倒數第二天」送到。已知 4 月是小月有 30 天，請問水果是幾月幾日送到？",
+                "options": ["4 月 28 日", "4 月 29 日", "4 月 30 日", "5 月 1 日"],
+                "answer": 1,
+                "rationale": "4月的最後一天（倒數第一天）是4月30日，那倒數第二天就是前一天，也就是4月29日。"
+            },
+            {
+                "question": "哥哥參加 9 天的夏令營，從 7 月 1 日開始，請問夏令營的最後一天是 7 月幾日？",
+                "options": ["7 月 8 日", "7 月 9 日", "7 月 10 日", "7 月 11 日"],
+                "answer": 1,
+                "rationale": "從1日開始數9天：1、2、3、4、5、6、7、8、9，所以最後一天是7月9日（1 + 9 - 1 = 9）。"
+            },
+            {
+                "question": "姐姐的生日在 10 月，妹妹的生日在 12 月。請問這兩個生日月份「合起來」一共有幾天？",
+                "options": ["60 天", "61 天", "62 天", "63 天"],
+                "answer": 2,
+                "rationale": "10月是大月有31天，12月也是大月有31天，兩者相加：31 + 31 = 62 天。"
+            },
+            {
+                "question": "今年是平年（2月有28天）。小華從 2 月 26 日開始感冒生病，一直到 3 月 2 日才痊癒，他一共生病了幾天？",
+                "options": ["4 天", "5 天", "6 天", "7 天"],
+                "answer": 1,
+                "rationale": "跨月數數看：2月有26、27、28日（共3天），接續3月有1、2日（共2天），3 + 2 = 5 天。"
+            },
+            {
+                "question": "如果某一年的 8 月 1 日是星期三，那麼一週後的 8 月 8 日父親節會是星期幾？",
+                "options": ["星期二", "星期三", "星期四", "星期日"],
+                "answer": 1,
+                "rationale": "一星期有 7 天，日期的星期會循環。1 日是星期三，加上 7 天後的 8 日依然是星期三。"
+            },
+            {
+                "question": "某一年的 1 月剛好有「4 個完整的星期又多 3 天」，請問這年的 1 月一共有幾天？",
+                "options": ["28 天", "30 天", "31 天", "29 天"],
+                "answer": 2,
+                "rationale": "4個完整星期是 7 × 4 = 28 天，再多出 3 天就是 28 + 3 = 31 天（這也符合1月是大月的天數）。"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `第 ${currentQuestionIndex + 1} / ${questions.length} 題`;
+            document.getElementById("question-text").innerText = currentQuestion.question;
+            
+            const optionsBox = document.getElementById("options-box");
+            optionsBox.innerHTML = "";
+            
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.className = "option-btn";
+                button.innerText = option;
+                button.onclick = () => selectOption(index);
+                optionsBox.appendChild(button);
+            });
+            
+            document.getElementById("feedback-text").style.display = "none";
+            document.getElementById("next-button").style.display = "none";
+        }
+
+        function selectOption(selectedIndex) {
+            if (answered) return;
+            answered = true;
+            
+            const currentQuestion = Math.min(currentQuestionIndex, questions.length - 1);
+            const qData = questions[currentQuestion];
+            const buttons = document.getElementsByClassName("option-btn");
+            const feedbackBox = document.getElementById("feedback-text");
+            
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+            
+            if (selectedIndex === qData.answer) {
+                buttons[selectedIndex].classList.add("correct");
+                feedbackBox.className = "feedback-box correct";
+                feedbackBox.innerHTML = `<strong>⭕ 答對了！時間觀念非常棒！</strong><br>${qData.rationale}`;
+                score += 5;
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedbackBox.className = "feedback-box wrong";
+                feedbackBox.innerHTML = `<strong>❌ 答錯囉！沒關係，看解析想一想：</strong><br>${qData.rationale}`;
+            }
+            
+            feedbackBox.style.display = "block";
+            document.getElementById("next-button").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "block";
+            document.getElementById("final-score").innerText = `${score} 分`;
+            
+            const evaluationText = document.getElementById("evaluation-text");
+            if (score === 100) {
+                evaluationText.innerText = "太厲害了！滿分！你對年、月、日的推算跟大小月簡直瞭若指掌！💯";
+            } else if (score >= 80) {
+                evaluationText.innerText = "非常優秀！時間的跨月計算跟星期規律都掌握得很好喔！🌟";
+            } else if (score >= 60) {
+                evaluationText.innerText = "順利及格！平常可以多翻翻家裡的實體月曆，數數看天數，會更熟練喔！👍";
+            } else {
+                evaluationText.innerText = "再接再厲！可以用『握拳數關節』的方法來記大小月，多練習幾次一定會進步！💪";
+            }
+        }
+
+        function restartQuiz() {
+            score = 0;
+            currentQuestionIndex = 0;
+            document.getElementById("result-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
